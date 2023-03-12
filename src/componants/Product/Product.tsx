@@ -29,7 +29,7 @@ class Product extends React.Component<Props, MyState> {
     const item = this.state.item;
     var flag = true;
     serverRequests.cookie_serverRequest().then((value) => {
-      if (value == "false") {
+      if (value === "false") {
         window.location.reload();
         flag = false;
       }
@@ -49,7 +49,7 @@ class Product extends React.Component<Props, MyState> {
   };
 
   setSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    if (Number.isNaN(Number(e.target.value)) == false) {
+    if (Number.isNaN(Number(e.target.value)) === false) {
       this.setState({ amount: Number(e.target.value) });
     }
   }

@@ -28,7 +28,7 @@ class Reciepts extends React.Component<Props,MyState> {
         super(props);
         const current_url = window.location.href
         const myArray = current_url.split("/");
-        if(myArray[5] == undefined){
+        if(myArray[5] === undefined){
             this.state = {
                 reciepts: [],
                 user_id: myArray[4]
@@ -48,7 +48,7 @@ class Reciepts extends React.Component<Props,MyState> {
               });
           });
           serverRequests.readCookie().then( (response) => {
-              if(response == "false"){
+              if(response === "false"){
                     window.location.reload()
             }
           })
@@ -71,15 +71,15 @@ class Reciepts extends React.Component<Props,MyState> {
                      this.state.reciepts.map((item) => {
                         var minutes = new Date(item.date).getMinutes().toString()
                         var hour = new Date(item.date).getHours().toString()
-                        if(minutes.length == 1){
+                        if(minutes.length === 1){
                             minutes = "0" + minutes
                         }
-                        if(hour.length == 1){
+                        if(hour.length === 1){
                             hour = "0" + hour
                         }
                         const date =  new Date(item.date).getDate().toString() + "/" + new Date(item.date).getMonth().toString()+ "/" + new Date(item.date).getFullYear().toString()
                         const time = hour + ":" + minutes
-                        if(this.state.user_id == "0"){
+                        if(this.state.user_id === "0"){
                             return (
                                 <tr >
                                         <td><Link to={"/reciepts/0/reciept_item/" + item.recieptid} state={item.recieptid}>{item.recieptid}</Link></td>
