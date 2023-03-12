@@ -1,0 +1,69 @@
+.symbol {
+    background-color: white;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 30%;
+    height: 100%;
+    z-index: 50;
+    box-shadow: 5px 2px 2px rgb(220, 214, 214);
+  }
+
+.mask {
+    background-color: rgb(0, 0, 0);
+    position: fixed;
+    top: 0px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    opacity: 0.5;
+  }
+
+.link {
+  color: rgb(96, 174, 207);
+  padding:5px 0px 5px 0px;
+  border-top: 1.5px solid black;
+  border-bottom: 1.5px solid black;
+  display: block;
+  
+}
+
+.theMenu {
+  font-weight: bold;
+  padding:18px 0px 0px 18px;
+  
+}
+
+.logout {
+  background-color: initial;
+  background-image: linear-gradient(-180deg, #FF7E31, #E62C03);
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Inter,-apple-system,system-ui,Roboto,"Helvetica Neue",Arial,sans-serif;
+  height: 40px;
+  line-height: 40px;
+  outline: 0;
+  overflow: hidden;
+  padding: 0 20px;
+  pointer-events: auto;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  text-align: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  vertical-align: top;
+  white-space: nowrap;
+  z-index: 9;
+  border: 0;
+  transition: box-shadow .2s;
+}
+
+.logout:hover {
+  box-shadow: rgba(253, 76, 0, 0.5) 0 3px 8px;
+}

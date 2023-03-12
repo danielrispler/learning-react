@@ -1,0 +1,20 @@
+.headHead {
+  padding: 20px;
+  font-weight: bold;
+  font-family: Arial;
+  font-size: 20px;
+  display: flex;
+  /* equal height of the children */
+  justify-content: first baseline;
+  border-bottom: 2px solid;
+}
+
+.spaceNav {
+  margin-right: 20px;
+}
+
+
+
+.headHead a {
+  color: brown;
+}

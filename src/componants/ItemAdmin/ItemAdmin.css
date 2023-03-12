@@ -1,0 +1,128 @@
+.itemsAdmin {
+  background-color: rgb(253, 253, 253);
+  width: 280px;
+  border: 0px solid rgb(78, 66, 105);
+  box-shadow: 2px 2px 2px 2px #888888;
+  padding: 20px;
+  margin: 10px;
+    
+  }
+
+.headerAdmin{
+  display: flex; /* equal height of the children */
+  justify-content: space-between;
+}
+
+.fixedAdmin {
+    position: relative;
+    left: 70px;
+    top: 0px;
+  }
+
+.priceAdmin {
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 20px;
+  }
+
+  .itemNameAdmin {
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 20px;
+  }
+
+  .selecetAdmin{
+    display: block; /* equal height of the children */
+    justify-content: space-between;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .addtocartAdmin{
+    background: linear-gradient(-180deg, #FF7E31, #E62C03);
+    border: 0;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    border-radius: 8px;
+    height: 40px;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 2.2;
+    outline: transparent;
+    padding: 0 1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: box-shadow .2s ease-in-out;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    white-space: nowrap;
+  }
+  
+  .addtocartAdmin:not([disabled]):focus {
+    box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+  }
+  
+  .addtocartAdmin:not([disabled]):hover {
+    box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+  }
+
+  .spaceBetweenAdmin{
+    margin-left: 20px;
+    font-size: 20px;
+  }
+.spaceBetweenAddCart{
+    width: 40px;
+    margin-left: 10px;
+    margin-right: -10px;
+    
+    font-size: 20px;
+    text-align: center; 
+  }
+  
+  
+  .addRemAdmin {
+    position: relative;
+    top: -20px;
+    left: 130px;
+  
+  }
+
+  .quantitiesAdmin {
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 16px;
+  }
+
+  .glyphicon.glyphicon-plus{
+    font-size: 20px;
+    color: #000000;
+  }
+  .glyphicon.glyphicon-minus{
+    font-size: 20px;
+    color: #000000;
+  }
+
+
+  .quenAdmin{
+    display: flex; /* equal height of the children */
+    justify-content: first baseline ;
+    position: relative;
+    bottom: 0px;
+    right: 0px;
+  }
+
+  .priceAdmin{
+    display: flex; /* equal height of the children */
+    justify-content: space-between ;
+    
+  }
+
+  @media screen and (max-width: 520px) and (max-height: 380px) {
+    
+}

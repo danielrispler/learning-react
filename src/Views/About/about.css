@@ -1,0 +1,23 @@
+.text {
+    font-family: Arial;
+    font-size: 20px;
+}
+
+
+.headlines{
+    font-family: Arial;
+    font-size: 30px;
+    font-weight: bold;
+    color: rgb(245, 54, 16);
+}
+
+.pageName{
+    font-family: Arial;
+    font-size: 40px;
+    font-weight: bold;
+    color: rgb(147, 30, 38);
+}
+
+.pageAbout{
+    padding:0px 0px 400px 0px;
+}
