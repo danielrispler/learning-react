@@ -1,23 +1,11 @@
 import axios from 'axios';
-import { Url } from './Reciepts.consts';
-type Reciept_Session= {
-	userid    : number       
-	recieptid  :number      
-	totalprice: number      
-	date      : Date 
-}
+import { Url } from 'src/common/common.consts';
+import { RecieptSession } from 'src/common/common.types';
 
-const reciepts = async function(userId:string) : Promise<Reciept_Session[]>{
-    return (await axios.get(Url.server_base_path+"/reciepts/" + userId)).data
-}
 
-const readCookie = async function() : Promise<string>{
-    return (await axios.post(Url.server_base_path+"/readCookie")).data 
-}
+export const reciepts = async (userId:string) : Promise<RecieptSession[]>=>
+    (await axios.get(`${Url.serverBasePath}/reciepts/${userId}`)).data
 
-const serverRequests = {
-    reciepts,
-    readCookie
-  }
-  
-  export default serverRequests;
+
+export const readCookie = async () : Promise<string>=>
+    (await axios.post(`${Url.serverBasePath}/readCookie`)).data 

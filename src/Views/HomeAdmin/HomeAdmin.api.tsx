@@ -1,27 +1,12 @@
 import axios from 'axios';
-import {Url} from './HomeAdmin.consts';
+import { Url } from 'src/common/common.consts';
+import { Item } from 'src/common/common.types';
 
-type ItemType = {
-    _id  :      number    
-  item  :    string 
-  price :    number    
-  imgNumber :number    
-  left     : number        
-  itemId : number    
-  }
+export const nonDeleteitems = async() : Promise<Item[]>=>
+    (await axios.get(`${Url.serverBasePath}/nonDeleteitems`)).data 
 
-const items_serverRequest = async function() : Promise<ItemType[]>{
-    return (await axios.get(Url.server_base_path+"/nonDeleteitems")).data 
-}
-const cookie_serverRequest = async function() : Promise<string>{
-    return (await axios.post(Url.server_base_path+"/readCookie")).data 
-}
+export const readCookie = async() : Promise<string>=>
+    (await axios.post(`${Url.serverBasePath}/readCookie`)).data 
 
-const serverRequests = {
-    items_serverRequest,
-    cookie_serverRequest
-  }
-  
-  export default serverRequests;
 
 

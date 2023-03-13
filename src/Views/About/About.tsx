@@ -1,7 +1,6 @@
 import React from "react";
 import './about.css';
-import axios from 'axios';
-import cookie_serverRequest from './about.api';
+import {readCookie} from './about.api';
 
 
 type Props = {
@@ -16,12 +15,10 @@ class About extends React.Component<Props,MyState> {
       super(props);
     }
     
-    componentDidMount() {
-      cookie_serverRequest().then((value) => {
-        if(value == "false"){
-          window.location.reload()
-        }
-      })
+    async componentDidMount() {
+      if(await readCookie() == "false"){
+        window.location.reload()
+      }
     }
     
     render() {

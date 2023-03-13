@@ -1,64 +1,43 @@
 import React from 'react'
 import "./Reciepts.css"
 import { Link } from 'react-router-dom';
-import serverRequests from './Reciepts.api';
+import {reciepts,readCookie} from './Reciepts.api';
+import { RecieptSession } from 'src/common/common.types';
 
-
-type Props = {
-    
-}
-
-type Reciept_Session= {
-	userid    : number       
-	recieptid  :number      
-	totalprice: number      
-	date      : Date 
-}
-
-type MyState = {    
-    
-    reciepts: Reciept_Session []; 
+interface MyState {    
+    reciepts: RecieptSession []; 
     user_id:string
-     
-    
 };
 
-class Reciepts extends React.Component<Props,MyState> {
-    constructor(props:Props) {
+class Reciepts extends React.Component<object,MyState> {
+    constructor(props:object) {
         super(props);
-        const current_url = window.location.href
-        const myArray = current_url.split("/");
-        if(myArray[5] === undefined){
+        const myArray = window.location.href.split("/");
+        if(myArray[5] == undefined){
             this.state = {
                 reciepts: [],
-                user_id: myArray[4]
-            };
+                user_id: myArray[4] 
+            }
         }else{
             this.state = {
                 reciepts: [],
-                user_id: myArray[5]
-            };
-        }
+                user_id: myArray[5] 
+            }
+        }        
     }
     
-    componentDidMount() {
-        serverRequests.reciepts(this.state.user_id).then( (response) => {
-            this.setState({
-                reciepts: response
-              });
-          });
-          serverRequests.readCookie().then( (response) => {
-              if(response === "false"){
-                    window.location.reload()
-            }
-          })
-      }
+    async componentDidMount() {
+        console.log(this.state.user_id)
+        this.setState({reciepts: await reciepts(this.state.user_id)});
+        if(await readCookie() === "false"){
+            window.location.reload()
+        }   
+    }
 
     render(){
         return (
             <div className='page'>
                 <h1>all the reciepts</h1>
-
                 <table id="customers">
                 <tbody>
                 <tr>
@@ -72,17 +51,17 @@ class Reciepts extends React.Component<Props,MyState> {
                         var minutes = new Date(item.date).getMinutes().toString()
                         var hour = new Date(item.date).getHours().toString()
                         if(minutes.length === 1){
-                            minutes = "0" + minutes
+                            minutes = `0${minutes}`
                         }
                         if(hour.length === 1){
-                            hour = "0" + hour
+                            hour = `0${hour}`
                         }
-                        const date =  new Date(item.date).getDate().toString() + "/" + new Date(item.date).getMonth().toString()+ "/" + new Date(item.date).getFullYear().toString()
-                        const time = hour + ":" + minutes
+                        const date =  `${new Date(item.date).getDate().toString()}/${new Date(item.date).getMonth().toString()}/${new Date(item.date).getFullYear().toString()}`
+                        const time = `${hour}:${minutes}`
                         if(this.state.user_id === "0"){
                             return (
                                 <tr >
-                                        <td><Link to={"/reciepts/0/reciept_item/" + item.recieptid} state={item.recieptid}>{item.recieptid}</Link></td>
+                                        <td><Link to={`/reciepts/0/reciept_item/${item.recieptid}`} state={item.recieptid}>{item.recieptid}</Link></td>
                                         <td>{date}</td>
                                         <td>{time}</td>
                                         <td>{item.totalprice} &#8362;</td>
@@ -91,7 +70,7 @@ class Reciepts extends React.Component<Props,MyState> {
                         }else{
                             return (
                                 <tr >
-                                        <td><Link to={"/AdminReciepts/reciepts/" + this.state.user_id+ "/reciept_item/" + item.recieptid} state={item.recieptid}>{item.recieptid}</Link></td>
+                                        <td><Link to={`/AdminReciepts/reciepts/${this.state.user_id}/reciept_item/${item.recieptid}`} state={item.recieptid}>{item.recieptid}</Link></td>
                                         <td>{date}</td>
                                         <td>{time}</td>
                                         <td>{item.totalprice} &#8362;</td>

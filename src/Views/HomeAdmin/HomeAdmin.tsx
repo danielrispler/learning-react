@@ -2,27 +2,18 @@ import React from "react";
 import ItemAdmin from "../../componants/ItemAdmin/ItemAdmin"
 import './HomeAdmin.css';
 import { Link } from "react-router-dom";
-import serverRequest from './HomeAdmin.api';
+import {readCookie,nonDeleteitems} from './HomeAdmin.api';
+import { Item } from "src/common/common.types";
 
 type Props = {
   username:string
 }
-type ItemType = {
-_id  :      number    
-item  :    string 
-price :    number    
-imgNumber :number    
-left     : number        
-itemId : number    
-}
 
 type MyState = {    
-  items: ItemType []; 
+  items: Item []; 
   selectedItem:string
   
 };
-
-
 
 class HomeAdmin extends React.Component<Props,MyState> {
     constructor(props:Props) {
@@ -34,30 +25,16 @@ class HomeAdmin extends React.Component<Props,MyState> {
 
       this.filter = this.filter.bind(this);
     }
-    
-    
-    
-    
-    componentDidMount() {
-      serverRequest.items_serverRequest().then((value) => {this.setState({items : value})})
-      serverRequest.cookie_serverRequest().then((value) => {
-        if(value != "false"){
-          const splitted = value.split(":"); 
-            if(splitted[0] != this.props.username){
-              window.location.reload()
-            }
-        }else{
-          window.location.reload()
-        }
-      })
-    }
-    filter(a:React.ChangeEvent<HTMLInputElement>):(any) {
-      if(a.target.value==""){
-        this.setState({selectedItem: ""})
-      }else{
-        this.setState({selectedItem: a.target.value})
+     
+    async componentDidMount() {
+      this.setState({items : await nonDeleteitems()})
+      if(await readCookie() == "false"){
+        window.location.reload()
       }
-
+      
+    }
+    filter(a:React.ChangeEvent<HTMLInputElement>):(void) {
+      this.setState({selectedItem: a.target.value})
     }
     
     render() {

@@ -1,39 +1,24 @@
 import React from 'react'
-import "./Cart.css"
+import "./CartPage.css"
 import ItemCart from "../ItemCart/ItemCart";
 import { Link } from 'react-router-dom';
-import serverRequests from './Cart.api';
-import { Shipping } from './Cart.consts';
+import {cart, readCookie,nonDeleteitems,pay} from './CartPage.api';
+import { Shipping } from './CartPage.consts';
+import { Item,Cart } from 'src/common/common.types';
+import { calculateTotalPrice } from './CartPage.utils';
+
 
 type Props = {
-    item ?: ItemType
-}
-type ItemType = {
-	_id  :      number        
-	item  :    string 
-	price :    number    
-	imgNumber :number    
-	left     : number        
-	itemid : number    
-}
-
-type CartType = {
-	_id  :      number        
-	userid  :    number   
-    inCart : number 
-    itemid  :    number     
-	    
+    item ?: Item
 }
 
 type MyState = {    
-    items: ItemType []; // like this
-    cart: CartType []; 
+    items: Item []; // like this
+    cart: Cart []; 
     
 };
 
-
-
-class Cart extends React.Component<Props,MyState> {
+class CartPage extends React.Component<Props,MyState> {
     constructor(props:Props) {
         super(props);
         this.state = {
@@ -46,49 +31,21 @@ class Cart extends React.Component<Props,MyState> {
     
     
       
-      componentDidMount() {
-        serverRequests.nonDeleteitems().then( (response) => {
-            this.setState({
-                items: response
-              });
-            
-          });
-          serverRequests.cart().then( (response) => {
-            this.setState({
-                cart: response
-              });
-            
-          });
-          serverRequests.readCookie()
-              .then( (response) => {
-              if(response == "false"){
-                    window.location.reload()
-                }
-              
-            
-          })
+      async componentDidMount() {
+        this.setState({items: await nonDeleteitems()});      
+        this.setState({cart: await cart()});    
+        if(await readCookie() == "false"){
+            window.location.reload()
+        }
       }
 
       serverRequestPay() {
-        serverRequests.pay();
+        pay();
     }
    
     render(){
-        var temp = this.state.items
-
-        var total = 0
-        if(this.state.cart != null){
-            {this.state.cart.map(function(item) {                
-                const found = temp.find((obj) => {
-                    if(obj.itemid == item.itemid){
-                        return item
-                    }
-                });
-                if(found!=null)
-                total += item.inCart*found.price
-            })}
-        }
-        const totalPice = total
+        const items = this.state.items
+        const total = calculateTotalPrice(this.state.cart, items)
         const tax = (total * 0.05).toFixed(2)
         const finalPrice = (total * 1.05 + Shipping.shipping).toFixed(2)
         if(total == 0){
@@ -117,15 +74,10 @@ class Cart extends React.Component<Props,MyState> {
                     <section id="cart">
                         {
                         this.state.cart != null &&
-                            this.state.cart.map(function(item, i) {
-                                const found = temp.find((obj) => {
-                    
-                                    if(obj.itemid == item.itemid){
-                                        return item
-                                    }
-                                });
-                                if(found!=null){
-                                    return <ItemCart inCart={item.inCart} item={found} />;
+                            this.state.cart.map(function(cart) {
+                                const found = items.find((obj) => obj._id === cart.itemid);
+                                if(found){
+                                    return <ItemCart inCart={cart.inCart} item={found} />;
                                 }
                             })}
                         
@@ -136,7 +88,7 @@ class Cart extends React.Component<Props,MyState> {
                     <div className="container clearfix">
                         <div >
                         <div className="left">
-                            <h2 className="subtotal">Subtotal: <span>{totalPice} &#8362;</span></h2>
+                            <h2 className="subtotal">Subtotal: <span>{total} &#8362;</span></h2>
                             <h3 className="tax">Taxes (5%): <span>{tax} &#8362;</span></h3>
                             <h3 className="shipping">Shipping: <span>{Shipping.shipping} &#8362;</span></h3>
                         </div>
@@ -145,7 +97,7 @@ class Cart extends React.Component<Props,MyState> {
                             <h1 className="total">Total: <span>{finalPrice} &#8362;</span></h1>
                             
                             <Link to="/pay" >
-                                <button disabled={totalPice == 0} id="pay" className='btn' onClick={() => this.serverRequestPay()}>Checkout</button>
+                                <button disabled={total == 0} id="pay" className='btn' onClick={() => this.serverRequestPay()}>Checkout</button>
                             </Link>
                         </div>
                         </div>
@@ -162,4 +114,4 @@ class Cart extends React.Component<Props,MyState> {
     }
 }
 
-export default Cart
+export default CartPage

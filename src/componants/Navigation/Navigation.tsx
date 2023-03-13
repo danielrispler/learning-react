@@ -5,7 +5,7 @@ import './navigation.css';
 import{
     Link
   } from "react-router-dom";
-  import serverRequests from "./navigation.api";
+  import {deleteCookie} from "./navigation.api";
 
 
   
@@ -13,7 +13,7 @@ import{
 function Navigation(){
     const [showMenu, setShowMenu] = useState(false)
     const Logout = () =>{
-        serverRequests.deleteCookie()
+        deleteCookie()
         window.location.reload();
       }
 

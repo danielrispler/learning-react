@@ -1,33 +1,14 @@
 import axios from 'axios';
-import {Url} from './Product.consts';
+import { Url } from 'src/common/common.consts';
+import { Item } from 'src/common/common.types';
 
-type ItemType = {
-    _id  :      number    
-  item  :    string 
-  price :    number    
-  imgNumber :number    
-  left     : number        
-  itemId : number    
-  }
-  
-    
-const add_serverRequest = async function(itemId:string,amount : number) : Promise<ItemType[]>{
-    
-    return (await axios.post(Url.server_base_path+"/cart/add/" + itemId,{amount})).data
-   
-    
-}
-const cookie_serverRequest = async function() : Promise<string>{
-    return (await axios.post(Url.server_base_path+"/readCookie")).data 
-}
+export const addToCart = async (itemId:string,amount : number) : Promise<Item[]>=>
+  (await axios.post(`${Url.serverBasePath}/cart/add/${itemId}`,{amount})).data
 
-const serverRequests = {
-    add_serverRequest,
-    cookie_serverRequest
-  }
+export const readCookie = async() : Promise<string>=>
+    (await axios.post(`${Url.serverBasePath}/readCookie`)).data 
 
-  
-  
-  export default serverRequests;
+
+
 
 

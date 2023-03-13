@@ -2,25 +2,10 @@ import React, {useState} from 'react'
 import "./Payment.css"
 import { Link } from 'react-router-dom';
 
-type Props = {
-    
-  }
-  
-type MyState = {    
-  
-};
-
-class Payment extends React.Component<Props,MyState> {
-    constructor(props:Props) {
+class Payment extends React.Component<object,object> {
+    constructor(props:object) {
         super(props);
-        this.state = {
-          
-        };
-  
     }
-
-    
-
     render(){
         return (
           <div className='wrapper-1'>

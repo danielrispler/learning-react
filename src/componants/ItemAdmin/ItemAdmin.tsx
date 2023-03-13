@@ -1,24 +1,16 @@
 import React from 'react';
 import './ItemAdmin.css';
-import serverRequests from './ItemAdmin.api';
+import {add,readCookie,removeItem,changePrice,modifystock} from './ItemAdmin.api';
+import { Item } from 'src/common/common.types';
 
 type Props = {
-  item: ItemType;
-};
-type ItemType = {
-  _id: number;
-  item: string;
-  price: number;
-  imgNumber: number;
-  left: number;
-  itemId: number;
+  item: Item;
 };
 
 type MyState = {
-  item: ItemType;
+  item: Item;
   addsupply: number;
   amount: number;
-  flag:boolean
 
 };
 class ItemAdmin extends React.Component<Props, MyState> {
@@ -28,7 +20,6 @@ class ItemAdmin extends React.Component<Props, MyState> {
       item: this.props.item,
       addsupply: 0,
       amount: 0,
-      flag:true
     };
     this.addPrice = this.addPrice.bind(this);
     this.remPrice = this.remPrice.bind(this);
@@ -50,68 +41,45 @@ class ItemAdmin extends React.Component<Props, MyState> {
   }
 
   checkCookie = async()=>{
-    serverRequests.cookie().then((value) => {
-      if (value == "false") {
-        
-        this.setState({flag:false}) 
+      if (await readCookie() == "false") {
+        window.location.reload() 
       }
-    })
-    
   }
 
 
   removeItem = async () => {
-    let item = this.state.item;
-    console.log(item);
-    serverRequests.cookie().then((value) => {
-      if (value != "false") {
-        serverRequests.removeItem(String(item._id))
-      }
-      window.location.reload();
-    })
-  };
+    this.checkCookie()
+    await removeItem(String(this.state.item._id))
+  }
 
   addToCart = async () => {
-    const item = this.state.item;
-    serverRequests.cookie().then((value) => {
-      if (value != "false") {
-          if (this.state.amount > 0) {
-            if (item.left >= this.state.amount)
-              serverRequests.add(String(item._id),this.state.amount).then(() => { 
-                this.setState({ amount: 0 });
-                window.location.reload()
-              });
-            else
-              alert("we only have " + item.left + " in stack");
-          }
-          else
-            alert("you can add only positive number of items to cart");
-        }
-      else{
-        window.location.reload();
-      } 
-    })
-    
-
+    this.checkCookie()
+    if (this.state.amount > 0) {
+      if (this.state.item.left >= this.state.amount){
+        await add(String(this.state.item._id),this.state.amount)
+        this.setState({ amount: 0 });
+        window.location.reload()
+      }else{
+        alert("we only have " + this.state.item.left + " in stack");
+      }
+    }else{
+      alert("you can add only positive number of items to cart")
+    }  
   };
 
   changePrice = async () => {
-    const item = this.state.item;
-    serverRequests.cookie().then((value) => {
-      if (value != "false") {
-        if (item.price > 0) {
-          serverRequests.changePrice(String(item._id),item.price)
-          window.location.reload();
-          alert("price change!");
-        }
-        else
-          alert("price need to be positive!");
-        }
-      else{
-        window.location.reload();
-      } 
-    })
+    this.checkCookie() 
+    if (this.state.item.price > 0) {
+      await changePrice(String(this.state.item._id),this.state.item.price)
+      window.location.reload();
+      alert("price change!");
+    }
+    else
+      alert("price need to be positive!");
   }
+       
+   
+  
 
   addPrice() {
     let item1 = this.state.item;
@@ -140,10 +108,9 @@ class ItemAdmin extends React.Component<Props, MyState> {
   }
 
   setPrice(e: React.ChangeEvent<HTMLInputElement>) {
-       if (Number.isNaN(Number(e.target.value)) == false) {
-      let item1 = this.state.item;
-      item1.price = Number(e.target.value);
-      this.setState({ item: item1 });
+    if (!Number.isNaN(Number(e.target.value))) {
+      this.state.item.price = Number(e.target.value);
+      this.setState({ item: this.state.item });
     }
   }
 
@@ -173,24 +140,16 @@ class ItemAdmin extends React.Component<Props, MyState> {
   }
 
   confirmSupplyChange = async () => {
-    let item = this.state.item;
-    serverRequests.cookie().then((value) => {
-      if (value != "false") {
-        if (item.left + this.state.addsupply >= 0) {
-          serverRequests.modifystock(String(item._id),this.state.addsupply).then(() => {
-            window.location.reload();
-            this.setState({ amount: 0 });
-          });
-        }
-        else
-          alert("the minimun number for items in stack is 0");
-        }
-      else{
-        window.location.reload();
-      } 
-    })
-
-  };
+    this.checkCookie()
+    if (this.state.item.left + this.state.addsupply >= 0) {
+      await modifystock(String(this.state.item._id),this.state.addsupply)
+      window.location.reload();
+      this.setState({ amount: 0 });
+    }
+    else
+      alert("the minimun number for items in stack is 0");
+  }
+    
 
   importAll(r: __WebpackModuleApi.RequireContext): any {
     return r.keys().map(r);
@@ -199,15 +158,7 @@ class ItemAdmin extends React.Component<Props, MyState> {
 
   render() {
     const images = this.importAll(require.context('../../images', false, /\.(jpg)$/));
-    var image;
-    for (let i = 0; i < images.length; i++) {
-
-      if (images[i].includes("media/" + this.state.item.imgNumber + ".")) {
-
-        image = images[i];
-      }
-    }
-
+    const image = images.find((image:string) => image.includes(`media/${this.state.item.imgNumber}.`));
     return (
       <div className="col-lg-3 col-md-4 col-sm-6 col-xs-12">
           <div className='itemsAdmin'>

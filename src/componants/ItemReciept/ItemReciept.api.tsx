@@ -1,45 +1,17 @@
 import axios from 'axios';
-import {Url} from './ItemReciept.consts';
-
-type Reciept_Item ={
-	userid   : number 
-	recieptid : number 
-	itemid   : number 
-	incart   : number 
-}
-
-type ItemType = {
-	_id  :      number        
-	item  :    string 
-	price :    number    
-	imgNumber :number    
-	left     : number        
-	itemid : number    
-}
-  
+import { Url } from 'src/common/common.consts';
+import { Item, RecieptItem } from 'src/common/common.types';
+ 
     
-const recieptsItems = async function(recieptId:string) : Promise<Reciept_Item[]>{
-    
-    return (await axios.get(Url.server_base_path+"/recieptsItems/" + recieptId)).data
-   
-    
-}
-const readCookie = async function() : Promise<string>{
-    return (await axios.post(Url.server_base_path+"/readCookie")).data 
-}
-const allItems = async function() : Promise<ItemType[]>{
-    return (await axios.get(Url.server_base_path+"/allItems")).data 
-}
+export const recieptsItems = async (recieptId:string) : Promise<RecieptItem[]>=>
+    (await axios.get(Url.serverBasePath+"/recieptsItems/" + recieptId)).data  
 
-const serverRequests = {
-    recieptsItems,
-    readCookie,
-    allItems
+export const readCookie = async () : Promise<string>=>
+    (await axios.post(Url.serverBasePath+"/readCookie")).data 
 
-  }
+export const allItems = async () : Promise<Item[]>=>
+    (await axios.get(Url.serverBasePath+"/allItems")).data 
 
-  
-  
-  export default serverRequests;
+
 
 

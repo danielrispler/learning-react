@@ -1,78 +1,60 @@
 import React from 'react';
 import './itemCart.css';
-import serverRequests from './itemCart.api';
+import {readCookie,removeProductCompletely,modifyOneItemCart} from './itemCart.api';
+import { Item } from 'src/common/common.types';
 
-type Props = {
-    item: ItemType
+interface Props  {
+    item: Item
     inCart: number
 }
-type ItemType = {
-	_id  :      number        
-	item  :    string 
-	price :    number    
-	imgNumber :number    
-	left     : number     
-	itemid : number    
-}
 
-type MyState = {    
-    items: ItemType [];
-    item: ItemType; 
+interface MyState {    
+    items: Item [];
+    item: Item; 
   }
 
-class ItemCart extends React.Component<Props,MyState> {
-    
+class ItemCart extends React.Component<Props,MyState> {  
     constructor(props:Props) {
       super(props);
       this.state = {
         items: [],
         item: this.props.item
       };
-      this.remToCart = this.remToCart.bind(this)
+      this.remFromCart = this.remFromCart.bind(this)
       this.remOneFromCart = this.remOneFromCart.bind(this)
-      this.addOneToCart = this.addOneToCart.bind(this)      
+      this.addOneToCart = this.addOneToCart.bind(this)
     }
 
-    remToCart=async() =>{
-        serverRequests.readCookie().then( (response) => {
-          if(response != "false"){
-            serverRequests.RemoveProductCompletely(String(this.state.item._id),this.props.inCart).then((response) =>{
-              this.setState({ items: response, item: response[this.props.item._id-1] })
-            })
-          }
-          window.location.reload()
-      })
+    checkCookie = async()=>{
+      if (await readCookie() == "false") {
+        window.location.reload() 
+      }
     }
 
-      remOneFromCart=async() =>{
-        let item = this.state.item;
-        serverRequests.readCookie()
-          .then( (response) => {
-          if(response!= "false"){
-            serverRequests.modifyOneItemCart(String(item._id), 1).then((response) => {
-              this.setState({ items: response, item: response[this.props.item._id-1] })
-            })
-            }
-            window.location.reload()
-      })
-      
-      }
+    remFromCart=async() =>{
+      this.checkCookie()
+      const response = await removeProductCompletely(String(this.state.item._id),this.props.inCart)
+      this.setState({ items: response, item: response[this.props.item._id-1] }) 
+      window.location.reload() 
+    }
 
-      addOneToCart() {
-        let item = this.state.item;
-        serverRequests.readCookie().then( (response) => {
-          if(response!= "false"){
-            if(item.left > 0)
-              serverRequests.modifyOneItemCart(String(item._id), -1).then((response) => {
-                this.setState({ items: response, item: response[this.props.item._id-1] })
-              })
-            else{
-                alert("no more "+ item.item+ " in stack");
-            }
-            window.location.reload()
-          }
-        })
-      }
+    remOneFromCart=async() =>{
+      this.checkCookie()
+      const response = await modifyOneItemCart(String(this.state.item._id), 1)
+      this.setState({ items: response, item: response[this.props.item._id-1] })
+      window.location.reload()
+    }
+
+    addOneToCart=async() => {
+      this.checkCookie()
+      if(this.state.item.left > 0){
+        const response = await modifyOneItemCart(String(this.state.item._id), -1)
+        this.setState({ items: response, item: response[this.props.item._id-1] })
+        window.location.reload()
+      }else{
+          alert("no more "+ this.state.item.item+ " in stack");
+      } 
+    }
   
       
     importAll(r: __WebpackModuleApi.RequireContext): any {
@@ -81,16 +63,11 @@ class ItemCart extends React.Component<Props,MyState> {
       
     render() {
         const images = this.importAll(require.context('../../images', false, /\.(png|jpe?g|svg)$/));
-        var image
-        for (let i = 0; i < images.length; i++) {
-          if(images[i].includes("media/" + this.state.item.imgNumber)){
-              image = images[i]
-          }
-        }
+        const image = images.find((image:string) => image.includes(`media/${this.state.item.imgNumber}.`));
         return (
             <article className="product">
                 <header>
-                <a className="remove" onClick={this.remToCart}>
+                <a className="remove" onClick={this.remFromCart}>
                     <img src={image} alt= "product image" width="340" height="140"></img>
 
                     <h3>Remove product</h3>

@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AddItem from '../componants/AddItem/AddItem';
 import AdminRecieptsUsers from '../componants/AdminRecieptUsers/AdminRecieptUsers';
-import Cart from '../componants/Cart/Cart';
+import Cart from '../componants/CartPage/CartPage';
 import Header from '../componants/Header/Header';
 import HeaderAdmin from '../componants/HeaderAdmin/HeaderAdmin';
 import ItemReciept from '../componants/ItemReciept/ItemReciept';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Item } from 'src/common/common.types';
 import './Product.css';
-import serverRequests from './Product.api';
+import {addToCart,readCookie} from './Product.api';
 
 interface Props {
   item: Item;
@@ -26,26 +26,18 @@ class Product extends React.Component<Props, MyState> {
   }
 
   addToCart = async () => {
-    const item = this.state.item;
-    var flag = true;
-    serverRequests.cookie_serverRequest().then((value) => {
-      if (value === "false") {
-        window.location.reload();
-        flag = false;
-      }
-    });
-    if (flag) {
+    if (await readCookie() === "false") {
+      window.location.reload();
+    }else {
       if (this.state.amount > 0) {
-        if (item.left >= this.state.amount) {
-          serverRequests.add_serverRequest(String(item._id), this.state.amount).then(() => {
-            this.setState({ amount: 0 });
-          });
+        if (this.state.item.left >= this.state.amount) {
+          await addToCart(String(this.state.item._id), this.state.amount)
+          this.setState({ amount: 0 });
         } else
-          alert("we only have " + item.left + " in stack");
+          alert("we only have " + this.state.item.left + " in stack");
       } else
         alert("can not add negative number of items to cart");
     }
-
   };
 
   setSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -73,16 +65,10 @@ class Product extends React.Component<Props, MyState> {
 
   render() {
     const images = this.importAll(require.context('../../images', false, /\.(jpg)$/));
-    var image;
-    for (let i = 0; i < images.length; i++) {
-      if (images[i].includes("media/" + this.state.item.imgNumber)) {
-        image = images[i];
-      }
-    }
+    const image = images.find((image:string) => image.includes(`media/${this.state.item.imgNumber}.`));
     return (
       <div className="col-lg-3 col-md-4 col-sm-6 col-xs-12">
         <div >
-
           <div className='items'>
             <div className='split'>
               <div className="itemName">{this.state.item.item}</div>

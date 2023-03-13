@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import serverRequest, { User } from './AdminRecieptUsers.api';
+import {usersIds,readCookie } from './AdminRecieptUsers.api';
 import "./AdminRecieptUsers.css";
+import {User} from './AdminRecieptUsers.types'
 
 interface State {
     users: User[];
@@ -15,13 +16,14 @@ class AdminRecieptUsers extends React.Component<object, State> {
         };
     }
 
-    componentDidMount() {
-        serverRequest.usersIds().then((value) => { this.setState({ users: value }); });
-        serverRequest.readCookie().then((value) => {
-            if (value == "false") {
-                window.location.reload();
-            }
-        });
+    async componentDidMount() {
+        //usersIds().then((value) => { this.setState({ users: value }); });
+        this.setState({users: await usersIds()}) 
+        if (!await readCookie()) {
+            window.location.reload();
+        }
+        console.log("users",this.state.users)
+        
     }
 
     render() {
@@ -36,10 +38,10 @@ class AdminRecieptUsers extends React.Component<object, State> {
                             <th>Name</th>
                         </tr>
                         {this.state.users != null &&
-                            this.state.users.map(({ id, name }) => {
+                            this.state.users.map(({ _id, name }) => {
                                 return (
                                     <tr >
-                                        <td><Link to={`/AdminReciepts/reciepts/${id}`} state={id}>{id}</Link></td>
+                                        <td><Link to={`/AdminReciepts/reciepts/${_id}`} state={_id}>{_id}</Link></td>
                                         <td>{name} </td>
                                     </tr>
                                 );

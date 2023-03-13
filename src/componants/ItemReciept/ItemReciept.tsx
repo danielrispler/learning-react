@@ -1,44 +1,17 @@
 import React from 'react'
 import "./ItemReciept.css"
-import serverRequests from './ItemReciept.api';
+import {readCookie,recieptsItems,allItems} from './ItemReciept.api';
+import { Item, RecieptItem } from 'src/common/common.types';
 
-type Props = {
-    
-}
-
-type Reciept_Item ={
-	userid   : number 
-	recieptid : number 
-	itemid   : number 
-	incart   : number 
-}
-
-type ItemType = {
-	_id  :      number        
-	item  :    string 
-	price :    number    
-	imgNumber :number    
-	left     : number        
-	itemid : number    
-}
-
-type MyState = {    
+type State = {    
     reciept_id :string,
-    reciepts: Reciept_Item []; 
-    items: ItemType [];
-    
-     
-    
+    reciepts: RecieptItem []; 
+    items: Item [];
 };
-
-
-   
-  
-class ItemReciept extends React.Component<Props,MyState> {
-    constructor(props:Props) {
+class ItemReciept extends React.Component<object,State> {
+    constructor(props:object) {
         super(props);
-        const current_url = window.location.href
-        const myArray = current_url.split("/");
+        const myArray = window.location.href.split("/");
         if(myArray[3] == "AdminReciepts"){
             this.state = {
                 items: [],
@@ -52,36 +25,17 @@ class ItemReciept extends React.Component<Props,MyState> {
                 reciept_id : myArray[5]
             };
         }        
-        
     }
     
-    componentDidMount() {
-        serverRequests.recieptsItems(this.state.reciept_id).then( (response) => {
-            this.setState({
-                reciepts: response
-              });
-            
-          });
-          serverRequests.allItems().then( (response) => {
-            this.setState({
-                items: response
-              });
-              
-            
-          });
-         serverRequests.readCookie().then( (response) => {
-              if(response == "false"){
-                    window.location.reload()
-                }
-              
-            
-          })
-      }
-
-      
-
+    async componentDidMount() {
+        this.setState({reciepts: await recieptsItems(this.state.reciept_id)});  
+        this.setState({items: await allItems()});
+        if(await readCookie() == "false"){
+            window.location.reload()
+        }  
+    }
     render(){
-        var temp = this.state.items
+        const items = this.state.items
         return (
             <div className='page'>
                 <h1>all the reciepts</h1>
@@ -96,21 +50,15 @@ class ItemReciept extends React.Component<Props,MyState> {
                     <th>Total Price</th>
                     
                 </tr>
-                    {this.state.reciepts.map(function(item, i) {
-                        
-                        const found = temp.find((obj) => {
-                            if(obj.itemid == item.itemid){
-                                return obj
-                            }
-                        });
-                        if(found != null){
+                    {this.state.reciepts.map(function(reciept) {
+                         const foundItem = items.find((item) => item._id === reciept.itemid);
+                        if(foundItem){
                             return (
                                 <tr>
-                                    
-                                    <td>{found.item}</td>
-                                    <td>{item.incart}</td>
-                                    <td>{found.price} &#8362;</td>
-                                    <td>{found.price * item.incart} &#8362;</td>
+                                    <td>{foundItem.item}</td>
+                                    <td>{reciept.incart}</td>
+                                    <td>{foundItem.price} &#8362;</td>
+                                    <td>{foundItem.price * reciept.incart} &#8362;</td>
                                 </tr>
                             );
                         }

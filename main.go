@@ -104,7 +104,7 @@ func main() {
 	router.GET("/nonDeleteitems", GetNonDeleteItems)
 	router.GET("/allItems", GetAllItems)
 	router.GET("/cart", GetCart)
-	router.GET("/usersIds", GetUsersIds)
+	router.GET("/users", GetUsers)
 	router.GET("/reciepts/:userID", GetRecieptsSessions)
 	router.GET("/recieptsItems/:itemID", GetRecieptsItems)
 	router.POST("/login", LoginHandler)
@@ -209,10 +209,10 @@ func GetNonDeleteItems(c *gin.Context) {
 
 }
 
-func GetUsersIds(c *gin.Context) {
+func GetUsers(c *gin.Context) {
 	(c.Writer).Header().Set("Access-Control-Allow-Origin", "*")
 
-	opts := options.Find().SetProjection(bson.D{{Key: "_id", Value: 0}, {Key: "userid", Value: 1}, {Key: "name", Value: 1}})
+	opts := options.Find().SetProjection(bson.D{{Key: "_id", Value: 1}, {Key: "name", Value: 1}})
 
 	cursor, err := usersCollection.Find(context.TODO(), bson.D{}, opts)
 	if err != nil {
@@ -349,7 +349,7 @@ func AddItemToDataBase(c *gin.Context) {
 	name := c.Query("name")
 	price, err := strconv.Atoi(c.Query("price"))
 
-	opts := options.FindOne().SetSort(bson.D{{Key: "itemid", Value: -1}}).SetProjection(bson.D{{Key: "_id", Value: 1}})
+	opts := options.FindOne().SetSort(bson.D{{Key: "_id", Value: -1}}).SetProjection(bson.D{{Key: "_id", Value: 1}})
 	var result bson.M
 
 	err1 := itemsCollection.FindOne(context.TODO(), bson.D{}, opts).Decode(&result)
@@ -424,7 +424,7 @@ func LoginHandler(c *gin.Context) {
 func PayHandler(c *gin.Context) {
 	var counter_recieptid_bson bson.M
 	var counter_recieptid int
-	filterUser := bson.D{{Key: "userid", Value: int32(active_user_id)}}
+	filterUser := bson.D{{Key: "_id", Value: strconv.Itoa(active_user_id)}}
 	err := usersCollection.FindOne(context.TODO(), filterUser).Decode(&counter_recieptid_bson)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
@@ -450,7 +450,7 @@ func PayHandler(c *gin.Context) {
 	var item_fromitems bson.M
 	var item_price int
 	for _, result := range results {
-		filterItem := bson.D{{Key: "itemid", Value: result.Itemid}}
+		filterItem := bson.D{{Key: "_id", Value: result.Itemid}}
 		err := itemsCollection.FindOne(context.TODO(), filterItem).Decode(&item_fromitems)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
@@ -498,7 +498,7 @@ func AddItemCart(c *gin.Context) {
 			fmt.Println(result, err)
 		}
 
-		filterItem := bson.D{{Key: "itemid", Value: itemid}}
+		filterItem := bson.D{{Key: "_id", Value: itemid}}
 		updateLeftField := bson.D{{Key: "$inc", Value: bson.D{{Key: "left", Value: intVar * (-1)}}}}
 		result, err := itemsCollection.UpdateMany(context.TODO(), filterItem, updateLeftField)
 		fmt.Println(result, err)
@@ -536,7 +536,7 @@ func RemoveProductCompletely(c *gin.Context) {
 
 		resultDelete, err := cartsCollection.DeleteOne(context.TODO(), filterItem)
 
-		filter := bson.D{{Key: "itemid", Value: itemid}}
+		filter := bson.D{{Key: "_id", Value: itemid}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "left", Value: intVar}}}}
 		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
@@ -577,7 +577,7 @@ func modifyOneItemCart(c *gin.Context) {
 			intVarNeg = 1
 		}
 
-		filter := bson.D{{Key: "itemid", Value: itemid}}
+		filter := bson.D{{Key: "_id", Value: itemid}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "left", Value: intVar}}}}
 		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
@@ -639,7 +639,7 @@ func modifyStock(c *gin.Context) {
 		if strings.Contains(string(x), "-") {
 			intVar = intVar * (-1)
 		}
-		filter := bson.D{{Key: "itemid", Value: itemid}}
+		filter := bson.D{{Key: "_id", Value: itemid}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "left", Value: intVar}}}}
 		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {

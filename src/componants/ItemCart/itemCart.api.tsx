@@ -1,39 +1,20 @@
 import axios from 'axios';
-import {Url} from './itemCart.consts';
+import { Item } from 'src/common/common.types';
+import {Url} from 'src/common/common.consts';
 
-type ItemType = {
-    _id  :      number    
-  item  :    string 
-  price :    number    
-  imgNumber :number    
-  left     : number        
-  itemid : number    
-  }
+
   
     
-const RemoveProductCompletely = async function(itemId:string,num : number) : Promise<ItemType[]>{
-    
-    return (await axios.post(Url.server_base_path+"/cart/RemoveProductCompletely/" + itemId,{num})).data
+export const removeProductCompletely = async(itemId:string,num : number) : Promise<Item[]>=>
+     (await axios.post(Url.serverBasePath+"/cart/RemoveProductCompletely/" + itemId,{num})).data
    
-    
-}
-const readCookie = async function() : Promise<string>{
-    return (await axios.post(Url.server_base_path+"/readCookie")).data 
-}
-const modifyOneItemCart = async function(itemId:string,num : number) : Promise<ItemType[]>{
-    return (await axios.post(Url.server_base_path+"/cart/modifyOneItemCart/"+ itemId,
-    {num})).data 
-}
+export const readCookie = async () : Promise<string>=>
+    (await axios.post(Url.serverBasePath+"/readCookie")).data 
 
-const serverRequests = {
-    RemoveProductCompletely,
-    readCookie,
-    modifyOneItemCart
+export const modifyOneItemCart = async (itemId:string,num : number) : Promise<Item[]>=>
+    (await axios.post(Url.serverBasePath+"/cart/modifyOneItemCart/"+ itemId,{num})).data 
 
-  }
 
-  
-  
-  export default serverRequests;
+
 
 

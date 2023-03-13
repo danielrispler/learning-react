@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Item } from "src/common/common.types";
 import Product from "../../componants/Product/Product";
-import serverRequest from './Home.api';
+import {readCookie,nonDeleteitems} from './Home.api';
 import './home.css';
 
 interface Props {
@@ -33,19 +33,11 @@ class Home extends React.Component<Props, MyState> {
     this.setState({ selectedItem: a.target.value });
   }
 
-  componentDidMount(): void {
-    serverRequest.itemsServerRequest().then((value) => { this.setState({ items: value }); });
-    serverRequest.cookieServerRequest().then((value) => {
-      if (value != "false") {
-        const splitted = value.split(":");
-        if (splitted[0] != this.props.username) {
-          window.location.reload();
-        }
-      } else {
-        window.location.reload();
-      }
-      console.log()
-    });
+  async componentDidMount(): Promise<void> {
+    this.setState({ items: await nonDeleteitems() }); 
+    if (await readCookie() == "false") {
+      window.location.reload();
+    }
   }
 
   render() {

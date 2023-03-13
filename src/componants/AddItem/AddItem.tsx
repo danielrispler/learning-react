@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ChangeEvent } from 'react';
 import "./AddItem.css";
-import addItem from './Additem.api';
-
-const headers = {
-  "Content-Type": "multipart/form-data"
-};
+import {addItem} from './Additem.api';
 
 function AddItem() {
   const [details, setDetails] = useState({ name: "", price: "" });
@@ -19,13 +14,10 @@ function AddItem() {
     if (selectedImage != null) {
       const formData = new FormData();
       formData.append("image", selectedImage);
-      addItem(formData, details.price, details.name).then((response) => {
-        if (response == 0) {
-          alert("succes");
-          navigate('/');
-        }
-      });
-
+      if (await addItem(formData, details.price, details.name) == 0) {
+        alert("succes");
+        navigate('/');
+      }
     }
   };
 

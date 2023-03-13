@@ -5,14 +5,14 @@ import './NavigationAdmin.css';
 import{
     Link
   } from "react-router-dom";
-import serverRequests from "./NavigationAdmin.api";
+import {deleteCookie} from "./NavigationAdmin.api";
 
   
 
 function NavigationAdmin(){
     const [showMenu, setShowMenu] = useState(false)
     const Logout = () =>{
-        serverRequests.deleteCookie()
+        deleteCookie()
         window.location.reload();
       }
 

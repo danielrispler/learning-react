@@ -1,8 +1,7 @@
 import axios from 'axios';
-import {Url} from './about.consts';
+import { Url } from 'src/common/common.consts';
 
-const cookie_serverRequest = async function() : Promise<string>{
-    return (await axios.post(Url.server_base_path+"/readCookie")).data 
-}
+export const readCookie = async () : Promise<string>=>
+    (await axios.post(`${Url.serverBasePath}/readCookie`)).data 
 
-export default cookie_serverRequest;
+
