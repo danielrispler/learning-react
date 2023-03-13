@@ -44,6 +44,7 @@ class Home extends React.Component<Props, MyState> {
       } else {
         window.location.reload();
       }
+      console.log()
     });
   }
 
