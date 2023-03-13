@@ -28,31 +28,36 @@ class ItemCart extends React.Component<Props,MyState> {
     checkCookie = async()=>{
       if (await readCookie() == "false") {
         window.location.reload() 
+        return false
+      }
+      return true
+  }
+
+    remFromCart=async() =>{
+      if(await this.checkCookie()){
+        const response = await removeProductCompletely(String(this.state.item._id),this.props.inCart)
+        this.setState({ items: response, item: response[this.props.item._id-1] }) 
+        window.location.reload() 
       }
     }
 
-    remFromCart=async() =>{
-      this.checkCookie()
-      const response = await removeProductCompletely(String(this.state.item._id),this.props.inCart)
-      this.setState({ items: response, item: response[this.props.item._id-1] }) 
-      window.location.reload() 
-    }
-
     remOneFromCart=async() =>{
-      this.checkCookie()
-      const response = await modifyOneItemCart(String(this.state.item._id), 1)
-      this.setState({ items: response, item: response[this.props.item._id-1] })
-      window.location.reload()
+      if(await this.checkCookie()){
+        const response = await modifyOneItemCart(String(this.state.item._id), 1)
+        this.setState({ items: response, item: response[this.props.item._id-1] })
+        window.location.reload()
+      }
     }
 
     addOneToCart=async() => {
-      this.checkCookie()
-      if(this.state.item.left > 0){
-        const response = await modifyOneItemCart(String(this.state.item._id), -1)
-        this.setState({ items: response, item: response[this.props.item._id-1] })
-        window.location.reload()
-      }else{
-          alert("no more "+ this.state.item.item+ " in stack");
+      if(await this.checkCookie()){
+        if(this.state.item.left > 0){
+          const response = await modifyOneItemCart(String(this.state.item._id), -1)
+          this.setState({ items: response, item: response[this.props.item._id-1] })
+          window.location.reload()
+        }else{
+            alert("no more "+ this.state.item.item+ " in stack");
+        }
       } 
     }
   

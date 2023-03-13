@@ -17,9 +17,8 @@ class AdminRecieptUsers extends React.Component<object, State> {
     }
 
     async componentDidMount() {
-        //usersIds().then((value) => { this.setState({ users: value }); });
         this.setState({users: await usersIds()}) 
-        if (!await readCookie()) {
+        if (await readCookie() == "false") {
             window.location.reload();
         }
         console.log("users",this.state.users)

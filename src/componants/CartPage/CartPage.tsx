@@ -39,8 +39,13 @@ class CartPage extends React.Component<Props,MyState> {
         }
       }
 
-      serverRequestPay() {
-        pay();
+      async serverRequestPay() {
+        if(await readCookie() == "false"){
+            window.location.reload()
+        }else{
+            pay();
+        }
+        
     }
    
     render(){
@@ -73,7 +78,7 @@ class CartPage extends React.Component<Props,MyState> {
                 <div className="container">
                     <section id="cart">
                         {
-                        this.state.cart != null &&
+                        this.state.cart &&
                             this.state.cart.map(function(cart) {
                                 const found = items.find((obj) => obj._id === cart.itemid);
                                 if(found){

@@ -43,39 +43,44 @@ class ItemAdmin extends React.Component<Props, MyState> {
   checkCookie = async()=>{
       if (await readCookie() == "false") {
         window.location.reload() 
+        return false
       }
+      return true
   }
 
 
   removeItem = async () => {
-    this.checkCookie()
-    await removeItem(String(this.state.item._id))
+    if(await this.checkCookie()){
+      await removeItem(String(this.state.item._id))
+    }
   }
 
   addToCart = async () => {
-    this.checkCookie()
-    if (this.state.amount > 0) {
-      if (this.state.item.left >= this.state.amount){
-        await add(String(this.state.item._id),this.state.amount)
-        this.setState({ amount: 0 });
-        window.location.reload()
+    if(await this.checkCookie()){
+      if (this.state.amount > 0) {
+        if (this.state.item.left >= this.state.amount){
+          await add(String(this.state.item._id),this.state.amount)
+          this.setState({ amount: 0 });
+          window.location.reload()
+        }else{
+          alert("we only have " + this.state.item.left + " in stack");
+        }
       }else{
-        alert("we only have " + this.state.item.left + " in stack");
-      }
-    }else{
-      alert("you can add only positive number of items to cart")
-    }  
+        alert("you can add only positive number of items to cart")
+      } 
+    } 
   };
 
   changePrice = async () => {
-    this.checkCookie() 
-    if (this.state.item.price > 0) {
-      await changePrice(String(this.state.item._id),this.state.item.price)
-      window.location.reload();
-      alert("price change!");
+    if(await this.checkCookie()){
+      if (this.state.item.price > 0) {
+        await changePrice(String(this.state.item._id),this.state.item.price)
+        window.location.reload();
+        alert("price change!");
+      }
+      else
+        alert("price need to be positive!");
     }
-    else
-      alert("price need to be positive!");
   }
        
    
@@ -140,14 +145,15 @@ class ItemAdmin extends React.Component<Props, MyState> {
   }
 
   confirmSupplyChange = async () => {
-    this.checkCookie()
-    if (this.state.item.left + this.state.addsupply >= 0) {
-      await modifystock(String(this.state.item._id),this.state.addsupply)
-      window.location.reload();
-      this.setState({ amount: 0 });
-    }
-    else
-      alert("the minimun number for items in stack is 0");
+    if(await this.checkCookie()){
+      if (this.state.item.left + this.state.addsupply >= 0) {
+        await modifystock(String(this.state.item._id),this.state.addsupply)
+        window.location.reload();
+        this.setState({ amount: 0 });
+      }
+      else
+        alert("the minimun number for items in stack is 0");
+    } 
   }
     
 
