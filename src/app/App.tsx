@@ -12,7 +12,7 @@ import Reciepts from '../componants/Reciept/Reciepts';
 import About from '../Views/About/About';
 import Home from '../Views/Home/Home';
 import HomeAdmin from '../Views/HomeAdmin/HomeAdmin';
-import serverRequests from './app.api';
+import {loginServerRequest,cookie_serverRequest} from './app.api';
 import { UserType, USER_TYPES } from './App.consts';
 import './app.css';
 
@@ -22,7 +22,7 @@ const App: FunctionComponent = () => {
   const [username, setUsername] = useState<string>("");
 
   const login = async (username: string, password: string): Promise<void> => {
-    const userType = await serverRequests.loginServerRequest(username, password);
+    const userType = await loginServerRequest(username, password);
     if (userType != USER_TYPES.none) {
       setUserType(userType);
       setAuthenticated(true);
@@ -33,15 +33,14 @@ const App: FunctionComponent = () => {
   };
 
   const readCookie = async (): Promise<void> => {
-    serverRequests.cookie_serverRequest().then((value) => {
-      if (value != "false") {
-        const splitted = value.split(":");
+    const value = await cookie_serverRequest()
+    if (value != "false") {
+      const splitted = value.split(":");
 
-        setAuthenticated(true);
-        setUserType(Number(splitted[1]) == USER_TYPES.admin ? USER_TYPES.admin : USER_TYPES.client);
-        setUsername(splitted[0]);
-      }
-    });
+      setAuthenticated(true);
+      setUserType(Number(splitted[1]) == USER_TYPES.admin ? USER_TYPES.admin : USER_TYPES.client);
+      setUsername(splitted[0]);
+    }
   };
 
   readCookie();
