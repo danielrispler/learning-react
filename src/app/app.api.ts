@@ -12,7 +12,7 @@ const loginServerRequest = async (username: string, password: string): Promise<U
 };
 
 const cookie_serverRequest = async (): Promise<string> =>
-    (await axios.post(Url.serverBasePath + "/readCookie")).data;
+    (await axios.post(`${Url.serverBasePath}/readCookie`)).data;
 
 const serverRequests = {
     loginServerRequest,

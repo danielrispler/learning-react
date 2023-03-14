@@ -4,13 +4,13 @@ import { Item, RecieptItem } from 'src/common/common.types';
  
     
 export const recieptsItems = async (recieptId:string) : Promise<RecieptItem[]>=>
-    (await axios.get(Url.serverBasePath+"/recieptsItems/" + recieptId)).data  
+    (await axios.get(`${Url.serverBasePath}/recieptsItems/${recieptId}`)).data  
 
 export const readCookie = async () : Promise<string>=>
-    (await axios.post(Url.serverBasePath+"/readCookie")).data 
+    (await axios.post(`${Url.serverBasePath}/readCookie`)).data 
 
 export const allItems = async () : Promise<Item[]>=>
-    (await axios.get(Url.serverBasePath+"/allItems")).data 
+    (await axios.get(`${Url.serverBasePath}/allItems`)).data 
 
 
 
