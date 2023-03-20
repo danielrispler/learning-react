@@ -5,8 +5,7 @@ import { Item } from 'src/common/common.types';
 export const nonDeleteitems = async() : Promise<Item[]>=>
     (await axios.get(`${Url.serverBasePath}/nonDeleteitems`)).data 
 
-export const readCookie = async() : Promise<string>=>
-    (await axios.post(`${Url.serverBasePath}/readCookie`)).data 
+
 
 
 

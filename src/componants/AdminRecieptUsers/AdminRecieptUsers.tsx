@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {usersIds,readCookie } from './AdminRecieptUsers.api';
+import {usersIds } from './AdminRecieptUsers.api';
 import "./AdminRecieptUsers.css";
 import {User} from './AdminRecieptUsers.types'
 
@@ -18,9 +18,7 @@ class AdminRecieptUsers extends React.Component<object, State> {
 
     async componentDidMount() {
         this.setState({users: await usersIds()}) 
-        if (await readCookie() == "false") {
-            window.location.reload();
-        }
+        
         console.log("users",this.state.users)
         
     }

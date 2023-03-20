@@ -2,7 +2,7 @@ import React from 'react'
 import "./CartPage.css"
 import ItemCart from "../ItemCart/ItemCart";
 import { Link } from 'react-router-dom';
-import {cart, readCookie,nonDeleteitems,pay} from './CartPage.api';
+import {cart,nonDeleteitems,pay} from './CartPage.api';
 import { Shipping } from './CartPage.consts';
 import { Item,Cart } from 'src/common/common.types';
 import { calculateTotalPrice } from './CartPage.utils';
@@ -25,30 +25,20 @@ class CartPage extends React.Component<Props,MyState> {
           items: [],
           cart: []
         };
-  
-        this.serverRequestPay = this.serverRequestPay.bind(this);
-    }
+      }
     
     
       
       async componentDidMount() {
         this.setState({items: await nonDeleteitems()});      
         this.setState({cart: await cart()});    
-        if(await readCookie() == "false"){
-            window.location.reload()
-        }
       }
 
-      async serverRequestPay() {
-        if(await readCookie() == "false"){
-            window.location.reload()
-        }else{
-            pay();
-        }
-        
-    }
+    serverRequestPay =async () =>
+        await pay();
    
     render(){
+        console.log(this.state.cart)
         const items = this.state.items
         const total = calculateTotalPrice(this.state.cart, items)
         const tax = (total * 0.05).toFixed(2)
@@ -80,9 +70,10 @@ class CartPage extends React.Component<Props,MyState> {
                         {
                         this.state.cart &&
                             this.state.cart.map(function(cart) {
-                                const found = items.find((obj) => obj._id === cart.itemid);
+                                const found = items.find((obj) => obj._id === cart.itemId);
                                 if(found){
-                                    return <ItemCart inCart={cart.inCart} item={found} />;
+                                    
+                                    return <ItemCart inCart={cart.itemsAmount} item={found} />;
                                 }
                             })}
                         

@@ -1,7 +1,7 @@
 import React from 'react'
 import "./Reciepts.css"
 import { Link } from 'react-router-dom';
-import {reciepts,readCookie} from './Reciepts.api';
+import {reciepts} from './Reciepts.api';
 import { RecieptSession } from 'src/common/common.types';
 
 interface MyState {    
@@ -29,9 +29,6 @@ class Reciepts extends React.Component<object,MyState> {
     async componentDidMount() {
         console.log(this.state.user_id)
         this.setState({reciepts: await reciepts(this.state.user_id)});
-        if(await readCookie() === "false"){
-            window.location.reload()
-        }   
     }
 
     render(){
@@ -61,19 +58,19 @@ class Reciepts extends React.Component<object,MyState> {
                         if(this.state.user_id === "0"){
                             return (
                                 <tr >
-                                        <td><Link to={`/reciepts/0/reciept_item/${item.recieptid}`} state={item.recieptid}>{item.recieptid}</Link></td>
+                                        <td><Link to={`/reciepts/0/reciept_item/${item.recieptId}`} state={item.recieptId}>{item.recieptId}</Link></td>
                                         <td>{date}</td>
                                         <td>{time}</td>
-                                        <td>{item.totalprice} &#8362;</td>
+                                        <td>{item.totalPrice} &#8362;</td>
                                 </tr>
                             );
                         }else{
                             return (
                                 <tr >
-                                        <td><Link to={`/AdminReciepts/reciepts/${this.state.user_id}/reciept_item/${item.recieptid}`} state={item.recieptid}>{item.recieptid}</Link></td>
+                                        <td><Link to={`/AdminReciepts/reciepts/${this.state.user_id}/reciept_item/${item.recieptId}`} state={item.recieptId}>{item.recieptId}</Link></td>
                                         <td>{date}</td>
                                         <td>{time}</td>
-                                        <td>{item.totalprice} &#8362;</td>
+                                        <td>{item.totalPrice} &#8362;</td>
                                 </tr>
                             );
                         }

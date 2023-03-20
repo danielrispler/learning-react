@@ -1,6 +1,6 @@
 import React from 'react';
 import './itemCart.css';
-import {readCookie,removeProductCompletely,modifyOneItemCart} from './itemCart.api';
+import {removeProductCompletely,modifyOneItemCart} from './itemCart.api';
 import { Item } from 'src/common/common.types';
 
 interface Props  {
@@ -25,40 +25,32 @@ class ItemCart extends React.Component<Props,MyState> {
       this.addOneToCart = this.addOneToCart.bind(this)
     }
 
-    checkCookie = async()=>{
-      if (await readCookie() == "false") {
-        window.location.reload() 
-        return false
-      }
-      return true
-  }
-
     remFromCart=async() =>{
-      if(await this.checkCookie()){
+      
         const response = await removeProductCompletely(String(this.state.item._id),this.props.inCart)
         this.setState({ items: response, item: response[this.props.item._id-1] }) 
         window.location.reload() 
-      }
+      
     }
 
     remOneFromCart=async() =>{
-      if(await this.checkCookie()){
+      
         const response = await modifyOneItemCart(String(this.state.item._id), 1)
         this.setState({ items: response, item: response[this.props.item._id-1] })
         window.location.reload()
-      }
+      
     }
 
     addOneToCart=async() => {
-      if(await this.checkCookie()){
-        if(this.state.item.left > 0){
+      
+        if(this.state.item.stockAmount > 0){
           const response = await modifyOneItemCart(String(this.state.item._id), -1)
           this.setState({ items: response, item: response[this.props.item._id-1] })
           window.location.reload()
         }else{
-            alert("no more "+ this.state.item.item+ " in stack");
+            alert("no more "+ this.state.item.name+ " in stack");
         }
-      } 
+      
     }
   
       
@@ -68,7 +60,8 @@ class ItemCart extends React.Component<Props,MyState> {
       
     render() {
         const images = this.importAll(require.context('../../images', false, /\.(png|jpe?g|svg)$/));
-        const image = images.find((image:string) => image.includes(`media/${this.state.item.imgNumber}.`));
+        const image = images.find((image:string) => image.includes(`media/${this.state.item.imageName}.`));
+        console.log(this.props.inCart)
         return (
             <article className="product">
                 <header>
@@ -81,7 +74,7 @@ class ItemCart extends React.Component<Props,MyState> {
 
                 <div className="content">
 
-                <h1>{this.state.item.item}</h1>
+                <h1>{this.state.item.name}</h1>
 
                 
                 </div>

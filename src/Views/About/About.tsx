@@ -1,6 +1,5 @@
 import React from "react";
 import './about.css';
-import {readCookie} from './about.api';
 
 
 type Props = {
@@ -16,9 +15,6 @@ class About extends React.Component<Props,MyState> {
     }
     
     async componentDidMount() {
-      if(await readCookie() == "false"){
-        window.location.reload()
-      }
     }
     
     render() {

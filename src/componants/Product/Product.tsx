@@ -1,7 +1,7 @@
 import React from 'react';
 import { Item } from 'src/common/common.types';
 import './Product.css';
-import {addToCart,readCookie} from './Product.api';
+import {addToCart} from './Product.api';
 
 interface Props {
   item: Item;
@@ -26,18 +26,16 @@ class Product extends React.Component<Props, MyState> {
   }
 
   addToCart = async () => {
-    if (await readCookie() === "false") {
-      window.location.reload();
-    }else {
+    
       if (this.state.amount > 0) {
-        if (this.state.item.left >= this.state.amount) {
+        if (this.state.item.stockAmount >= this.state.amount) {
           await addToCart(String(this.state.item._id), this.state.amount)
           this.setState({ amount: 0 });
         } else
-          alert("we only have " + this.state.item.left + " in stack");
+          alert("we only have " + this.state.item.stockAmount + " in stack");
       } else
         alert("can not add negative number of items to cart");
-    }
+    
   };
 
   setSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,13 +63,13 @@ class Product extends React.Component<Props, MyState> {
 
   render() {
     const images = this.importAll(require.context('../../images', false, /\.(jpg)$/));
-    const image = images.find((image:string) => image.includes(`media/${this.state.item.imgNumber}.`));
+    const image = images.find((image:string) => image.includes(`media/${this.state.item.imageName}.`));
     return (
       <div className="col-lg-3 col-md-4 col-sm-6 col-xs-12">
         <div >
           <div className='items'>
             <div className='split'>
-              <div className="itemName">{this.state.item.item}</div>
+              <div className="itemName">{this.state.item.name}</div>
 
               <div className="price">{this.state.item.price} &#8362;</div>
             </div>

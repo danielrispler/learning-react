@@ -1,51 +1,49 @@
-import React, { FunctionComponent, useState } from 'react';
+import { isNil } from 'ramda';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { User, UserType, USER_TYPES } from 'src/common/common.types';
 import AddItem from '../componants/AddItem/AddItem';
 import AdminRecieptsUsers from '../componants/AdminRecieptUsers/AdminRecieptUsers';
 import Cart from '../componants/CartPage/CartPage';
 import Header from '../componants/Header/Header';
 import HeaderAdmin from '../componants/HeaderAdmin/HeaderAdmin';
 import ItemReciept from '../componants/ItemReciept/ItemReciept';
-import LoginForm from '../componants/Login/LoginForm';
+import Login from '../componants/Login/Login';
 import Payment from '../componants/Payment/Payment';
 import Reciepts from '../componants/Reciept/Reciepts';
 import About from '../Views/About/About';
 import Home from '../Views/Home/Home';
 import HomeAdmin from '../Views/HomeAdmin/HomeAdmin';
-import {loginServerRequest,cookie_serverRequest} from './app.api';
-import { UserType, USER_TYPES } from './App.consts';
 import './app.css';
+import { getUserFromCookie } from './App.utils';
 
 const App: FunctionComponent = () => {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [userType, setUserType] = useState<UserType>(USER_TYPES.none);
-  const [username, setUsername] = useState<string>("");
+  const [username, setUsername] = useState("");
+  const [permission, setPermission] = useState<UserType>(USER_TYPES.none);
 
-  const login = async (username: string, password: string): Promise<void> => {
-    const userType = await loginServerRequest(username, password);
-    if (userType != USER_TYPES.none) {
-      setUserType(userType);
-      setAuthenticated(true);
-    } else {
-      alert("wrong username or password");
-      console.log("Details do not match!");
+  useEffect(()=>{
+    const user = getUserFromCookie()
+    console.log("user",user)
+    if(user!=""&&!isNil(user)){
+      console.log("user",user)
+      const splitUser = user.split(":")
+      setUsername(splitUser[0])
+      setPermission(("2" == splitUser[1])?USER_TYPES.admin:USER_TYPES.client)
     }
-  };
+    
+  }, [])
 
-  const readCookie = async (): Promise<void> => {
-    const value = await cookie_serverRequest()
-    if (value != "false") {
-      const splitted = value.split(":");
+  
 
-      setAuthenticated(true);
-      setUserType(Number(splitted[1]) == USER_TYPES.admin ? USER_TYPES.admin : USER_TYPES.client);
-      setUsername(splitted[0]);
-    }
-  };
+  // const [userType, setUserType] = useState<UserType>(USER_TYPES.none);
+  // const [username, setUsername] = useState<string>("");
 
-  readCookie();
-  if (authenticated) {
-    if (userType == 1) {
+
+  //setAuthenticated(true);
+  //setUserType(Number(splitted[1]) == USER_TYPES.admin ? USER_TYPES.admin : USER_TYPES.client);
+  //setUsername(splitted[0]);
+  if (username!=""&&!isNil(username)) {
+    if (permission == USER_TYPES.client) {
       return (
         <Router >
           <Header />
@@ -74,45 +72,42 @@ const App: FunctionComponent = () => {
           </div>
         </Router>);
     }
-    else {
-      return (
-        <Router>
-          <HeaderAdmin />
-          <div className='container'>
-            <Routes>
-              <Route path='/' element={<HomeAdmin username={username} />}>
+    return (
+      <Router>
+        <HeaderAdmin />
+        <div className='container'>
+          <Routes>
+            <Route path='/' element={<HomeAdmin username={username} />}>
 
-              </Route>
-              <Route path='/about' element={<About />}>
+            </Route>
+            <Route path='/about' element={<About />}>
 
-              </Route>
-              <Route path='/cart' element={<Cart />}>
+            </Route>
+            <Route path='/cart' element={<Cart />}>
 
-              </Route>
-              <Route path='/pay' element={<Payment />}>
+            </Route>
+            <Route path='/pay' element={<Payment />}>
 
-              </Route>
-              <Route path='/addItem' element={<AddItem />}>
+            </Route>
+            <Route path='/addItem' element={<AddItem />}>
 
-              </Route>
-              <Route path='/AdminReciepts' element={<AdminRecieptsUsers />}>
+            </Route>
+            <Route path='/AdminReciepts' element={<AdminRecieptsUsers />}>
 
-              </Route>
-              <Route path='/AdminReciepts/reciepts/:id' element={<Reciepts />}>
+            </Route>
+            <Route path='/AdminReciepts/reciepts/:id' element={<Reciepts />}>
 
-              </Route>
-              <Route path='/AdminReciepts/reciepts/:id/reciept_item/:id' element={<ItemReciept />}>
+            </Route>
+            <Route path='/AdminReciepts/reciepts/:id/reciept_item/:id' element={<ItemReciept />}>
 
 
-              </Route>
-            </Routes>
-          </div>
-        </Router>);
-    }
+            </Route>
+          </Routes>
+        </div>
+      </Router>);
   }
-  else {
-    return (<LoginForm Login={login} error={"Details do not match!"} />);
-  }
+  
+  return <Login/>;
 };
 
 

@@ -4,9 +4,9 @@ export const calculateTotalPrice= (carts:Cart[], items:Item[]):number => {
     let total = 0;
     if(carts != null){
         carts.map(function(cart) {                
-            const found = items.find((obj) => obj._id === cart.itemid);
+            const found = items.find((obj) => obj._id === cart.itemId);
             if(found){
-                total += cart.inCart*found.price
+                total += cart.itemsAmount*found.price
             }
         })
     }

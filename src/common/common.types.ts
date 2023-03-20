@@ -1,28 +1,43 @@
+export const USER_TYPES = {
+	none: 0,
+	client: 1,
+	admin: 2
+} as const;
+
+export type UserType = typeof USER_TYPES[keyof typeof USER_TYPES];
+
+type UserId = string;
+
+export interface User {
+	username: string;
+	type: UserType;
+}
+
 export interface Item {
-    _id: number;
-    item: string;
-    price: number;
-    imgNumber: number;
-    left: number;
+	_id: number;
+	name: string; 
+	price: number;
+	imageName: number; 
+	stockAmount: number; 
 };
 
-export interface Cart  {
-	_id  :      number        
-	userid  :    number   
-    inCart : number 
-    itemid  :    number     
-	    
+export interface Cart {
+	_id: number;
+	userId: UserId;
+	itemsAmount: number;
+	itemId: number;
 }
 
 export interface RecieptItem {
-	userid   : number 
-	recieptid : number 
-	itemid   : number 
-	incart   : number 
+	userId: UserId;
+	recieptId: number;
+	itemId: number;
+	inCart: number;
 }
+
 export interface RecieptSession {
-	userid    : number       
-	recieptid  :number      
-	totalprice: number      
-	date      : Date 
+	userId: UserId;
+	recieptId: number;
+	totalPrice: number;
+	date: Date;
 }

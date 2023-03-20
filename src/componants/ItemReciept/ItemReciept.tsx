@@ -1,6 +1,6 @@
 import React from 'react'
 import "./ItemReciept.css"
-import {readCookie,recieptsItems,allItems} from './ItemReciept.api';
+import {recieptsItems,allItems} from './ItemReciept.api';
 import { Item, RecieptItem } from 'src/common/common.types';
 
 type State = {    
@@ -22,19 +22,17 @@ class ItemReciept extends React.Component<object,State> {
             this.state = {
                 items: [],
                 reciepts: [],
-                reciept_id : myArray[5]
+                reciept_id : myArray[6]
             };
         }        
     }
     
     async componentDidMount() {
         this.setState({reciepts: await recieptsItems(this.state.reciept_id)});  
-        this.setState({items: await allItems()});
-        if(await readCookie() == "false"){
-            window.location.reload()
-        }  
+        this.setState({items: await allItems()}); 
     }
     render(){
+        console.log("12",this.state.reciepts)
         const items = this.state.items
         return (
             <div className='page'>
@@ -51,14 +49,15 @@ class ItemReciept extends React.Component<object,State> {
                     
                 </tr>
                     {this.state.reciepts.map(function(reciept) {
-                         const foundItem = items.find((item) => item._id === reciept.itemid);
+                         const foundItem = items.find((item) => item._id === reciept.itemId);
+                         
                         if(foundItem){
                             return (
                                 <tr>
-                                    <td>{foundItem.item}</td>
-                                    <td>{reciept.incart}</td>
+                                    <td>{foundItem.name}</td>
+                                    <td>{reciept.inCart}</td>
                                     <td>{foundItem.price} &#8362;</td>
-                                    <td>{foundItem.price * reciept.incart} &#8362;</td>
+                                    <td>{foundItem.price * reciept.inCart} &#8362;</td>
                                 </tr>
                             );
                         }

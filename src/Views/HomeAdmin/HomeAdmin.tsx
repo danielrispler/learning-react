@@ -2,11 +2,11 @@ import React from "react";
 import ItemAdmin from "../../componants/ItemAdmin/ItemAdmin"
 import './HomeAdmin.css';
 import { Link } from "react-router-dom";
-import {readCookie,nonDeleteitems} from './HomeAdmin.api';
+import {nonDeleteitems} from './HomeAdmin.api';
 import { Item } from "src/common/common.types";
 
 type Props = {
-  username:string
+  username?:string
 }
 
 type MyState = {    
@@ -28,9 +28,6 @@ class HomeAdmin extends React.Component<Props,MyState> {
      
     async componentDidMount() {
       this.setState({items : await nonDeleteitems()})
-      if(await readCookie() == "false"){
-        window.location.reload()
-      }
       
     }
     filter(a:React.ChangeEvent<HTMLInputElement>):(void) {
@@ -47,7 +44,7 @@ class HomeAdmin extends React.Component<Props,MyState> {
             <div className="row">
               <div className="container">
                 {this.state.items.map((item) => {
-                  if(this.state.selectedItem == "" ||  item.item.startsWith(this.state.selectedItem)){
+                  if(this.state.selectedItem == "" ||  item.name.startsWith(this.state.selectedItem)){
                     return <ItemAdmin item={item} />;
                   }
                 })}

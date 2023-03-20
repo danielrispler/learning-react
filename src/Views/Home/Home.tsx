@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Item } from "src/common/common.types";
 import Product from "../../componants/Product/Product";
-import {readCookie,nonDeleteitems} from './Home.api';
+import {nonDeleteitems} from './Home.api';
 import './home.css';
 
 interface Props {
-  username: string;
+  username?: string;
 };
 
 interface MyState {
@@ -35,9 +35,7 @@ class Home extends React.Component<Props, MyState> {
 
   async componentDidMount(): Promise<void> {
     this.setState({ items: await nonDeleteitems() }); 
-    if (await readCookie() == "false") {
-      window.location.reload();
-    }
+    
   }
 
   render() {
@@ -49,7 +47,7 @@ class Home extends React.Component<Props, MyState> {
           <div className="row">
             <div className="container">
               {this.state.items.map((item) => {
-                if (this.state.selectedItem == "" || item.item.startsWith(this.state.selectedItem)) {
+                if (this.state.selectedItem == "" || item.name.startsWith(this.state.selectedItem)) {
                   return <Product item={item} />;
                 }
               })}
