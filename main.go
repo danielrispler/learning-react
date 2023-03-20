@@ -56,10 +56,6 @@ type InCart struct {
 	ItemsAmount int `json:"itemsAmount" binding:"required"`
 }
 
-type Str struct {
-	Str string `json:"name" binding:"required"`
-}
-
 const key = "secretKey"
 
 var active_user_id = -1
@@ -76,17 +72,16 @@ var recieptItemsCollection *mongo.Collection
 var recieptSessionsCollection *mongo.Collection
 
 func main() {
-	var err error
-	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	var clientErr error
+	client, clientErr = mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	if clientErr != nil {
+		fmt.Println("Unable to connect to MongoDB server")
+	}
 	itemsCollection = client.Database("testing").Collection("items")
 	usersCollection = client.Database("testing").Collection("users")
 	cartsCollection = client.Database("testing").Collection("cart_item")
 	recieptItemsCollection = client.Database("testing").Collection("reciepts_items")
 	recieptSessionsCollection = client.Database("testing").Collection("reciepts_sessions")
-
-	if err != nil {
-		fmt.Println("Unable to connect to MongoDB server")
-	}
 
 	gin.SetMode(gin.DebugMode)
 	router := gin.Default()
@@ -105,44 +100,8 @@ func main() {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "*")
 		c.Header("Access-Control-Allow-Headers", "*")
-		c.JSON(http.StatusOK, gin.H{
-			"//message": "pong",
-		})
+		c.Status(http.StatusOK)
 	})
-
-	// router.GET("/nonDeleteitems", GetNonDeleteItems)
-	// router.GET("/allItems", GetAllItems)
-	// router.GET("/cart", GetCart)
-	// router.GET("/users", GetUsers)
-	// router.GET("/reciepts/:userID", GetRecieptsSessions)
-	// router.GET("/recieptsItems/:itemID", GetRecieptsItems)
-	// router.POST("/login", LoginHandler)
-
-	// //call from Reciept
-	// router.POST("/pay", PayHandler)
-
-	// //call from item and ItemAdmin
-	// router.POST("/cart/add/:itemID", AddItemCart)
-
-	// //call from itemReciept
-	// router.POST("/cart/modifyOneItemCart/:itemID", modifyOneItemCart)
-
-	// router.POST("/cart/RemoveProductCompletely/:itemID", RemoveProductCompletely)
-
-	// router.POST("/addItem", AddItemToDataBase)
-	// router.POST("/items/removeItem/:itemID", RemoveItemFromDataBase)
-
-	// router.POST("/items/changePrice/:itemID", ChangePrice)
-
-	// router.POST("/readCookie", ReadCookie)
-	// router.POST("/deleteCookie", DeleteCookie)
-
-	// router.POST("/items/modifystock/:itemID", modifyStock)
-
-	// // Start and run the server
-	// router.Run(":8080")
-
-	//r := gin.Default()
 
 	router.POST("/login", LoginHandler)
 
@@ -159,55 +118,32 @@ func main() {
 	router.Run(":8080")
 }
 
-// func validateMiddleware(c *gin.Context) {
-// 	cookie, cookieError := c.Cookie("token")
-// 	if cookieError != nil {
-// 		c.AbortWithStatus(http.StatusUnauthorized)
-// 		return
-// 	}
-// 	token, tokenError := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte(key), nil
-// 	})
-// 	if tokenError != nil {
-// 		c.AbortWithStatus(http.StatusUnauthorized)
-// 		return
-// 	}
-// 	claims := token.Claims.(*jwt.StandardClaims)
-// 	splitted := strings.Split(claims.Issuer, ":")
-// 	if splitted[1] == "0" { 
-// 		c.AbortWithStatus(http.StatusForbidden)
-// 		return
-// 	} 
-// 	if splitted[1] == "1" { 
-//         c.Set("validationResult", 1)
-//         return
-//     } 
-//     c.Set("validationResult", 2)
-//     return
-	
-// }
-
 func validateMiddleware(c *gin.Context) {
 	cookie, cookieError := c.Cookie("token")
 	if cookieError != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
-	} else {
-		token, tokenError := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(key), nil
-		})
-		if tokenError != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-		} else {
-			claims := token.Claims.(*jwt.StandardClaims)
-			splitted := strings.Split(claims.Issuer, ":")
-			if splitted[1] == "0" {
-				c.AbortWithStatus(http.StatusForbidden)
-			}else { 
-				c.Set("validationResult", splitted[1])
-			}
-		}
+		return
 	}
-	return
+	token, tokenError := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(key), nil
+	})
+	if tokenError != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	claims := token.Claims.(*jwt.StandardClaims)
+	splitted := strings.Split(claims.Issuer, ":")
+	if splitted[1] == "0" { 
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	} 
+	if splitted[1] == "1" { 
+        c.Set("validationResult", "1")
+        return
+    } 
+    c.Set("validationResult", "2")
+    return
+	
 }
 
 func pathHandler(c *gin.Context) {
@@ -233,17 +169,17 @@ func pathHandler(c *gin.Context) {
 		PayHandler(c)
 	case "cartAdd":
 		AddItemCart(c, c.Param("id"))
-	case "modifyOneItemCart":
-		modifyOneItemCart(c, c.Param("id"))
-	case "removeProductCompletely":
-		RemoveProductCompletely(c, c.Param("id"))
+	case "modifyCartItem": 
+		modifyCartItem(c, c.Param("id"))
+	case "removeCartItem": 
+		RemoveCartItem(c, c.Param("id"))
 	case "addItem":
 		if validationResult == "2"{
 			AddItemToDataBase(c)
 		}else {
             c.AbortWithStatus(http.StatusForbidden)
         }
-	case "removeItem":
+	case "removeItemFromDataBase":
 		if validationResult == "2"{
 			RemoveItemFromDataBase(c, c.Param("id"))
 		}else {
@@ -270,36 +206,33 @@ func pathHandler(c *gin.Context) {
 
 func ChangePrice(c *gin.Context, itemID string) {
 	bodyPrice, _ := ioutil.ReadAll(c.Request.Body)
-	if itemId, err := strconv.Atoi(itemID); err == nil {
+	if itemId, errCast := strconv.Atoi(itemID); errCast == nil {
 		re := regexp.MustCompile("[0-9]+")
-		var match = re.FindAllString(string(bodyPrice), -1)[0]
+		match := re.FindAllString(string(bodyPrice), -1)[0]
 		intVar, err := strconv.Atoi(match)
 		if err != nil {
-			fmt.Printf("error %s", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		}
 		filter := bson.D{{Key: "_id", Value: itemId}}
 		update := bson.D{{Key: "$set", Value: bson.D{{Key: "price", Value: intVar}}}}
 
-		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
+		_, err = itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
-		fmt.Println(result)
 
 		cursor, err := itemsCollection.Find(context.TODO(), bson.D{})
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 		var results []bson.M
 
 		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, results)
 	} else {
-
 		c.AbortWithStatus(http.StatusNotFound)
 	}
 }
@@ -307,21 +240,21 @@ func ChangePrice(c *gin.Context, itemID string) {
 func RemoveItemFromDataBase(c *gin.Context,itemID string) {
 	if itemId, err := strconv.Atoi(itemID); err == nil {
 		update := bson.D{{Key: "$set", Value: bson.D{{Key: "isDeleted", Value: 1}}}}
-		result, err := itemsCollection.UpdateOne(context.TODO(), bson.D{{Key: "_id", Value: itemId}}, update)
+		_, err = itemsCollection.UpdateOne(context.TODO(), bson.D{{Key: "_id", Value: itemId}}, update)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+		}
 
 		filterItem := bson.D{{Key: "_id", Value: itemId}}
 
-		resultDelete, err := cartsCollection.DeleteMany(context.TODO(), filterItem)
-		fmt.Println(resultDelete)
+		_, err = cartsCollection.DeleteMany(context.TODO(), filterItem)
 
-		fmt.Println(result)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
-
-		c.JSON(http.StatusOK, "")
+		c.Status(http.StatusOK)
 	} else {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 	}
 
 }
@@ -331,12 +264,12 @@ func GetNonDeleteItems(c *gin.Context) {
 
 	cursor, err := itemsCollection.Find(context.TODO(), bson.D{{Key: "isDeleted", Value: 0}})
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []bson.M
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, results)
@@ -350,12 +283,12 @@ func GetUsers(c *gin.Context) {
 
 	cursor, err := usersCollection.Find(context.TODO(), bson.D{}, opts)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []bson.M
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, results)
@@ -367,12 +300,12 @@ func GetAllItems(c *gin.Context) {
 
 	cursor, err := itemsCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []bson.M
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, results)
@@ -386,12 +319,12 @@ func GetRecieptsItems(c *gin.Context, itemID string) {
 
 	cursor, err := recieptItemsCollection.Find(context.TODO(), bson.D{{Key: "userId", Value: int32(recieptsLastUserId)}, {Key: "recieptId", Value: int32(itemId)}})
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []bson.M
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, results)
@@ -408,16 +341,15 @@ func GetRecieptsSessions(c *gin.Context, userID string ) {
 			id = intId
 			recieptsLastUserId = id
 		}
-
 	}
 	cursor, err := recieptSessionsCollection.Find(context.TODO(), bson.D{{Key: "userId", Value: int32(id)}})
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []bson.M
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, results)
@@ -431,55 +363,28 @@ func GetCart(c *gin.Context) {
 
 	cursor, err := cartsCollection.Find(context.TODO(), filterUser)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []bson.M
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 
 	c.JSON(http.StatusOK, results)
 
 }
 
-func ReadCookie(c *gin.Context) {
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		c.JSON(http.StatusOK, "false")
-	} else {
-		token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(key), nil
-		})
-		if err != nil {
-			c.JSON(http.StatusOK, "false")
-		} else {
-			claims := token.Claims.(*jwt.StandardClaims)
-
-			splitted := strings.Split(claims.Issuer, ":")
-			active_user_name = splitted[0]
-			active_user_id, err = strconv.Atoi(splitted[2])
-
-			c.JSON(http.StatusOK, claims.Issuer)
-		}
-
-	}
-
-}
-
 func DeleteCookie(c *gin.Context) {
 	c.SetCookie("token", "", -3600, "/", "localhost", false, true)
-	c.JSON(http.StatusOK, "")
-
+	c.Status(http.StatusOK)
 }
 
 func AddItemToDataBase(c *gin.Context) {
 	file, err := c.FormFile("image")
 
 	if err != nil {
-		fmt.Println("image upload error --> ", err)
-		c.JSON(http.StatusOK, "Server error")
-
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"error": err})
 	}
 	name := c.Query("name")
 	price, err := strconv.Atoi(c.Query("price"))
@@ -489,8 +394,7 @@ func AddItemToDataBase(c *gin.Context) {
 
 	err1 := itemsCollection.FindOne(context.TODO(), bson.D{}, opts).Decode(&result)
 	if err1 != nil {
-		fmt.Printf("error %s", err1)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err1})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"error": err1})
 	}
 	var temp = result["_id"].(int32)
 	var intId = int(temp)
@@ -506,8 +410,7 @@ func AddItemToDataBase(c *gin.Context) {
 	err = c.SaveUploadedFile(file, fmt.Sprintf("./src/images/%s", image))
 
 	if err != nil {
-		fmt.Println("image save error --> ", err)
-		c.JSON(http.StatusInternalServerError, "Server error")
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"error": err1})
 	}
 
 	itemsCollection.InsertOne(context.TODO(), item)
@@ -520,8 +423,7 @@ func LoginHandler(c *gin.Context) {
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(&tuser)
 	if err != nil {
-		fmt.Printf("error %s", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 	}
 	var result bson.M
 
@@ -530,22 +432,18 @@ func LoginHandler(c *gin.Context) {
 
 	_ = usersCollection.FindOne(context.TODO(), filter, opts).Decode(&result)
 
-	var flag int = 0
-	if result == nil {
-		flag = 0
-	} else {
-		flag = int(result["permission"].(int32))
-	}
-	if flag != 0 {
+	permission := 0
+	if result != nil {
+		permission = int(result["permission"].(int32))
 		claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-			Issuer:    tuser.Name + ":" + strconv.Itoa(flag) + ":" + result["_id"].(string),
+			Issuer:    tuser.Name + ":" + strconv.Itoa(permission) + ":" + result["_id"].(string),
 			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), //1 day
 		})
 
 		token, err := claims.SignedString([]byte(key))
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		}
 
 		c.SetCookie("token", token, 3600, "/", "localhost", false, false)
@@ -555,7 +453,7 @@ func LoginHandler(c *gin.Context) {
 
 	
 
-	c.JSON(http.StatusOK, flag)
+	c.JSON(http.StatusOK, permission)
 
 }
 
@@ -565,47 +463,47 @@ func PayHandler(c *gin.Context) {
 	filterUser := bson.D{{Key: "_id", Value: strconv.Itoa(active_user_id)}}
 	err := usersCollection.FindOne(context.TODO(), filterUser).Decode(&counter_recieptId_bson)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	counter_recieptId = int(counter_recieptId_bson["recieptCounter"].(int32))
 	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "recieptCounter", Value: 1}}}}
-	outcome, err := usersCollection.UpdateOne(context.TODO(), filterUser, update)
+	_, err = usersCollection.UpdateOne(context.TODO(), filterUser, update)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
-	fmt.Println("OUTCOME", outcome)
 	filterItem := bson.D{{Key: "userId", Value: int32(active_user_id)}}
 	cursor, err := cartsCollection.Find(context.TODO(), filterItem)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
 	var results []InCart
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 	}
-	var totalPrice = 0
+	totalPrice := 0
 	var item_fromitems bson.M
 	var item_price int
 	for _, result := range results {
 		filterItem := bson.D{{Key: "_id", Value: result.ItemId}}
 		err := itemsCollection.FindOne(context.TODO(), filterItem).Decode(&item_fromitems)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 		item_price = int(item_fromitems["price"].(int32))
 		totalPrice += result.ItemsAmount * item_price
 		newRecieptItem :=bson.D{{Key: "userId", Value: active_user_id}, {Key: "recieptId", Value: counter_recieptId}, {Key: "itemId", Value: result.ItemId}, {Key: "inCart", Value: result.ItemsAmount}}
-		//newRecieptItem := Reciept_Item{UserId: active_user_id, RecieptId: counter_recieptId, ItemId: result.ItemId, inCart: result.InCart}
-		resultInsert, err := recieptItemsCollection.InsertOne(context.TODO(), newRecieptItem)
-		fmt.Println(resultInsert, err)
+		_, err = recieptItemsCollection.InsertOne(context.TODO(), newRecieptItem)
 	}
 	newRecieptSession :=bson.D{{Key: "userId", Value: active_user_id}, {Key: "recieptId", Value: counter_recieptId}, {Key: "totalPrice", Value: totalPrice}, {Key: "date", Value: time.Now()}}
-	//newRecieptSession := Reciept_Session{UserId: active_user_id, RecieptId: counter_recieptId, TotalPrice: totalPrice, Date: time.Now()}
-	resultInsert, err := recieptSessionsCollection.InsertOne(context.TODO(), newRecieptSession)
-	fmt.Println(resultInsert, err)
-	resultDelete, err := cartsCollection.DeleteMany(context.TODO(), filterItem)
-	fmt.Println(resultDelete)
+	_, err = recieptSessionsCollection.InsertOne(context.TODO(), newRecieptSession)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+	}
+	_, err = cartsCollection.DeleteMany(context.TODO(), filterItem)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+	}
 
 	c.JSON(http.StatusOK, results)
 }
@@ -613,13 +511,11 @@ func PayHandler(c *gin.Context) {
 func AddItemCart(c *gin.Context, itemID string) {
 	bodyData, _ := ioutil.ReadAll(c.Request.Body)
 	if itemId, err := strconv.Atoi(itemID); err == nil {
-
 		re := regexp.MustCompile("[0-9]+")
-		var match = re.FindAllString(string(bodyData), -1)[0]
+		match := re.FindAllString(string(bodyData), -1)[0]
 		intVar, err := strconv.Atoi(match)
 		if err != nil {
-			fmt.Printf("error %s", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		}
 
 		var result1 bson.M
@@ -629,28 +525,33 @@ func AddItemCart(c *gin.Context, itemID string) {
 
 		if result1 != nil {
 			update := bson.D{{Key: "$inc", Value: bson.D{{Key: "itemsAmount", Value: intVar}}}}
-			result, err := cartsCollection.UpdateMany(context.TODO(), filterUser, update)
-			fmt.Println(result, err)
+			_, err := cartsCollection.UpdateMany(context.TODO(), filterUser, update)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+			}
 
 		} else {
 			newItem := bson.D{{Key: "userId", Value: int32(active_user_id)}, {Key: "itemId", Value: itemId}, {Key: "itemsAmount", Value: intVar}}
-			result, err := cartsCollection.InsertOne(context.TODO(), newItem)
-			fmt.Println(result, err)
+			_, err := cartsCollection.InsertOne(context.TODO(), newItem)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+			}
 		}
 
 		filterItem := bson.D{{Key: "_id", Value: itemId}}
 		updateLeftField := bson.D{{Key: "$inc", Value: bson.D{{Key: "stockAmount", Value: intVar * (-1)}}}}
-		result, err := itemsCollection.UpdateMany(context.TODO(), filterItem, updateLeftField)
-		fmt.Println(result, err)
-
+		_, err = itemsCollection.UpdateMany(context.TODO(), filterItem, updateLeftField)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+		}
 		cursor, err := itemsCollection.Find(context.TODO(), bson.D{})
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 		var results []bson.M
 
 		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, results)
@@ -660,38 +561,38 @@ func AddItemCart(c *gin.Context, itemID string) {
 	}
 }
 
-func RemoveProductCompletely(c *gin.Context,itemID string) {
+func RemoveCartItem(c *gin.Context,itemID string) {
 	bodyData, _ := ioutil.ReadAll(c.Request.Body)
 	if itemId, err := strconv.Atoi(itemID); err == nil {
 
 		re := regexp.MustCompile("[0-9]+")
-		var match = re.FindAllString(string(bodyData), -1)[0]
+		match := re.FindAllString(string(bodyData), -1)[0]
 		intVar, err := strconv.Atoi(match)
 		if err != nil {
-			fmt.Printf("error %s", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"error": err})
 		}
 
 		filterItem := bson.D{{Key: "itemId", Value: int32(itemId)}, {Key: "userId", Value: int32(active_user_id)}}
 
-		resultDelete, err := cartsCollection.DeleteOne(context.TODO(), filterItem)
-
+		_, err = cartsCollection.DeleteOne(context.TODO(), filterItem)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+		}
 		filter := bson.D{{Key: "_id", Value: itemId}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "stockAmount", Value: intVar}}}}
-		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
+		_, err = itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
-		fmt.Println(result, resultDelete)
 
 		cursor, err := itemsCollection.Find(context.TODO(), bson.D{})
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 		var results []bson.M
 
 		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, results)
@@ -701,16 +602,15 @@ func RemoveProductCompletely(c *gin.Context,itemID string) {
 	}
 }
 
-func modifyOneItemCart(c *gin.Context, itemID string) {
+func modifyCartItem(c *gin.Context, itemID string) {
 	var intVarNeg = -1
 	x, _ := ioutil.ReadAll(c.Request.Body)
 	if itemId, err := strconv.Atoi(itemID); err == nil {
 		re := regexp.MustCompile("[0-9]+")
-		var match = re.FindAllString(string(x), -1)[0]
+		match := re.FindAllString(string(x), -1)[0]
 		intVar, err := strconv.Atoi(match)
 		if err != nil {
-			fmt.Printf("error %s", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"error": err})
 		}
 		if strings.Contains(string(x), "-") {
 			intVar = -1
@@ -719,43 +619,39 @@ func modifyOneItemCart(c *gin.Context, itemID string) {
 
 		filter := bson.D{{Key: "_id", Value: itemId}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "stockAmount", Value: intVar}}}}
-		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
+		_, err = itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
-		fmt.Println(result)
 		filter = bson.D{{Key: "itemId", Value: itemId}, {Key: "userId", Value: int32(active_user_id)}}
 		update = bson.D{{Key: "$inc", Value: bson.D{{Key: "itemsAmount", Value: intVarNeg}}}}
-		result, err = cartsCollection.UpdateOne(context.TODO(), filter, update)
+		_, err = cartsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
-		fmt.Println(result)
-
 		var checkIfZero bson.M
 
-		err1 := cartsCollection.FindOne(context.TODO(), filter).Decode(&checkIfZero)
+		err = cartsCollection.FindOne(context.TODO(), filter).Decode(&checkIfZero)
 
-		if err1 != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 
 		if checkIfZero != nil && checkIfZero["itemsAmount"].(int32) == int32(0) {
-			resultDelete, err := cartsCollection.DeleteOne(context.TODO(), filter)
+			_, err := cartsCollection.DeleteOne(context.TODO(), filter)
 			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
-			fmt.Println(resultDelete)
 		}
 
 		cursor, err := itemsCollection.Find(context.TODO(), bson.D{})
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 		var results []bson.M
 
 		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, results)
@@ -767,33 +663,30 @@ func modifyOneItemCart(c *gin.Context, itemID string) {
 
 func modifyStock(c *gin.Context,itemID string) {
 	x, _ := ioutil.ReadAll(c.Request.Body)
-	fmt.Printf("x----- %s", string(x))
 	if itemId, err := strconv.Atoi(itemID); err == nil {
 		re := regexp.MustCompile("[0-9]+")
-		var match = re.FindAllString(string(x), -1)[0]
+		match := re.FindAllString(string(x), -1)[0]
 		intVar, err := strconv.Atoi(match)
 		if err != nil {
-			fmt.Printf("error %s", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"error": err})
 		}
 		if strings.Contains(string(x), "-") {
 			intVar = intVar * (-1)
 		}
 		filter := bson.D{{Key: "_id", Value: itemId}}
 		update := bson.D{{Key: "$inc", Value: bson.D{{Key: "stockAmount", Value: intVar}}}}
-		result, err := itemsCollection.UpdateOne(context.TODO(), filter, update)
+		_, err = itemsCollection.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
-		fmt.Println(result)
 
 		cursor, err := itemsCollection.Find(context.TODO(), bson.D{})
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 		var results []bson.M
 		if err = cursor.All(context.TODO(), &results); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": false, "message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, results)

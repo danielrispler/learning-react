@@ -7,8 +7,8 @@ import { Item } from 'src/common/common.types';
 export const add = async(itemId:string,amount : number) : Promise<Item[]>=>
     (await axios.post(`${Url.serverBasePath}/cartAdd/${itemId}`,{amount})).data 
 
-export const removeItem = async (itemId:string) : Promise<string>=>
-     (await axios.post(`${Url.serverBasePath}/removeItem/${itemId}`)).data 
+export const removeItemFromDB = async (itemId:string) : Promise<string>=>
+     (await axios.post(`${Url.serverBasePath}/removeItemFromDataBase/${itemId}`)).data 
 
 export const changePrice = async (itemId:string,price:number) : Promise<string>=>
      (await axios.post(`${Url.serverBasePath}/changePrice/${itemId}`,{price})).data 

@@ -1,6 +1,6 @@
 import React from 'react';
 import './ItemAdmin.css';
-import {add,removeItem,changePrice,modifystock} from './ItemAdmin.api';
+import {add,removeItemFromDB,changePrice,modifystock} from './ItemAdmin.api';
 import { Item } from 'src/common/common.types';
 
 type Props = {
@@ -24,7 +24,7 @@ class ItemAdmin extends React.Component<Props, MyState> {
       }
 
   removeItem = async () => {
-    await removeItem(String(this.state.item._id))
+    await removeItemFromDB(String(this.state.item._id))
     window.location.reload()
   }
 

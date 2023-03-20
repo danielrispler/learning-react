@@ -7,7 +7,6 @@ import "./Login.css";
 interface LoginState {
   username: string;
   password: string;
-  redirectToHomePage: boolean;
 };
 
 class Login extends React.Component<object, LoginState> {
@@ -16,7 +15,6 @@ class Login extends React.Component<object, LoginState> {
     this.state = {
       username: "",
       password: "",
-      redirectToHomePage: false
     };
     
   }
@@ -25,10 +23,8 @@ class Login extends React.Component<object, LoginState> {
   redirectToHomePage = (): void => { redirect('/'); };
 
   onSubmit = async () => {
-    const { username, password } = this.state;
-    const userType = await login(username, password);
+    const userType = await login(this.state.username, this.state.password);
     if (userType != USER_TYPES.none) {
-      //this.setState({ redirectToHomePage: true });
       this.redirectToHomePage();
     } else {
       alert("wrong username or password");
@@ -37,41 +33,31 @@ class Login extends React.Component<object, LoginState> {
   };
 
   render() {
-    // if (this.state.redirectToHomePage) {
-    //   redirect('/');
-    // }
+    
     return (
       <div className="body">
         <div className="login-form">
           <form onSubmit={this.onSubmit} id="form1">
-
             <h1 className='h1'>Login</h1>
             <div className="content">
-
               <div className='input-field'>
                 <input
-                  className='input' type="text" required placeholder="Username" name="name" id="name"
+                  className='input' type="text" required placeholder="Username" id="name"
                   onChange={e => this.setState({ username: e.target.value })} value={this.state.username}
                 />
               </div>
               <div className='input-field'>
-                <input className='input' type="password" required placeholder="Password" name="password" id="password"
+                <input className='input' type="password" required placeholder="Password" id="password"
                   onChange={a => this.setState({ password: a.target.value })} value={this.state.password}
                 />
               </div>
-
             </div>
             <div className="action">
-
-
               <button className='buttom' type="submit" form="form1" value="LOGIN">LOGIN</button>
             </div>
-
-
           </form>
         </div>
       </div>
-
     );
   }
 }

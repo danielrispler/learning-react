@@ -39,7 +39,7 @@ class HomeAdmin extends React.Component<Props,MyState> {
         <div  >
           <h2>home page admin, WELCOME {this.props.username}</h2>
 
-          <input type="text" id="myInput"  placeholder="Search for names.." onChange={this.filter} title="Type in a item name"/>
+          <input type="text" id="myInput"  placeholder="Search for item.." onChange={this.filter} title="Type in a item name"/>
           <div className="moveContainerLeft">
             <div className="row">
               <div className="container">

@@ -33,15 +33,6 @@ const App: FunctionComponent = () => {
     
   }, [])
 
-  
-
-  // const [userType, setUserType] = useState<UserType>(USER_TYPES.none);
-  // const [username, setUsername] = useState<string>("");
-
-
-  //setAuthenticated(true);
-  //setUserType(Number(splitted[1]) == USER_TYPES.admin ? USER_TYPES.admin : USER_TYPES.client);
-  //setUsername(splitted[0]);
   if (username!=""&&!isNil(username)) {
     if (permission == USER_TYPES.client) {
       return (
