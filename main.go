@@ -159,60 +159,63 @@ func main() {
 	router.Run(":8080")
 }
 
-func validateMiddleware(c *gin.Context) {
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized",
-		})
-		return
-	}
-
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(key), nil
-	})
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized",
-		})
-		return
-	}
-	claims := token.Claims.(*jwt.StandardClaims)
-	splitted := strings.Split(claims.Issuer, ":")
-	if splitted[1] == "0" { 
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"error": "Forbidden",
-		})
-		return
-	} 
-	return
-	
-}
-
 // func validateMiddleware(c *gin.Context) {
 // 	cookie, cookieError := c.Cookie("token")
 // 	if cookieError != nil {
 // 		c.AbortWithStatus(http.StatusUnauthorized)
-// 	} else {
-// 		token, tokenError := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-// 			return []byte(key), nil
-// 		})
-// 		if tokenError != nil {
-// 			c.AbortWithStatus(http.StatusUnauthorized)
-// 		} else {
-// 			claims := token.Claims.(*jwt.StandardClaims)
-// 			splitted := strings.Split(claims.Issuer, ":")
-// 			if splitted[1] == "0" {
-// 				c.AbortWithStatus(http.StatusForbidden)
-// 			}
-// 			return
-// 		}
+// 		return
 // 	}
-// 	return
+// 	token, tokenError := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+// 		return []byte(key), nil
+// 	})
+// 	if tokenError != nil {
+// 		c.AbortWithStatus(http.StatusUnauthorized)
+// 		return
+// 	}
+// 	claims := token.Claims.(*jwt.StandardClaims)
+// 	splitted := strings.Split(claims.Issuer, ":")
+// 	if splitted[1] == "0" { 
+// 		c.AbortWithStatus(http.StatusForbidden)
+// 		return
+// 	} 
+// 	if splitted[1] == "1" { 
+//         c.Set("validationResult", 1)
+//         return
+//     } 
+//     c.Set("validationResult", 2)
+//     return
+	
 // }
+
+func validateMiddleware(c *gin.Context) {
+	cookie, cookieError := c.Cookie("token")
+	if cookieError != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	} else {
+		token, tokenError := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(key), nil
+		})
+		if tokenError != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		} else {
+			claims := token.Claims.(*jwt.StandardClaims)
+			splitted := strings.Split(claims.Issuer, ":")
+			if splitted[1] == "0" {
+				c.AbortWithStatus(http.StatusForbidden)
+			}else { 
+				c.Set("validationResult", splitted[1])
+			}
+		}
+	}
+	return
+}
 
 func pathHandler(c *gin.Context) {
 	path := c.Param("path")
+	validationResult, exists := c.Get("validationResult")
+    if !exists {
+        c.AbortWithStatus(http.StatusInternalServerError)
+    }
 	switch path {
 	case "cart":
 		GetCart(c)
@@ -235,19 +238,33 @@ func pathHandler(c *gin.Context) {
 	case "removeProductCompletely":
 		RemoveProductCompletely(c, c.Param("id"))
 	case "addItem":
-		AddItemToDataBase(c)
+		if validationResult == "2"{
+			AddItemToDataBase(c)
+		}else {
+            c.AbortWithStatus(http.StatusForbidden)
+        }
 	case "removeItem":
-		RemoveItemFromDataBase(c, c.Param("id"))
+		if validationResult == "2"{
+			RemoveItemFromDataBase(c, c.Param("id"))
+		}else {
+            c.AbortWithStatus(http.StatusForbidden)
+        }
 	case "changePrice":
-		ChangePrice(c, c.Param("id"))
+		if validationResult == "2"{
+			ChangePrice(c, c.Param("id"))
+		}else {
+            c.AbortWithStatus(http.StatusForbidden)
+        }
 	case "deleteCookie":
 		DeleteCookie(c)
 	case "modifystock":
-		modifyStock(c, c.Param("id"))
+		if validationResult == "2"{
+			modifyStock(c, c.Param("id"))
+		}else {
+            c.AbortWithStatus(http.StatusForbidden)
+        }
 	default:
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Path not found",
-		})
+		c.Status(http.StatusNotFound)
 	}
 }
 
